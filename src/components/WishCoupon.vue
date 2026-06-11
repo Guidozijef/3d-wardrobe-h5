@@ -187,7 +187,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 
 const props = withDefaults(defineProps<{
   selectedTheme?: 'pink' | 'blue' | 'gold';
@@ -329,10 +329,26 @@ function selectCouponManually(coupon: any, index: number) {
   statusMessage.value = `已锁定心愿：[${coupon.name}]，你可以点击【立即抽奖】按钮开启快乐的跳轮！`;
 }
 
+// 声明顶级全局单例音频上下文，实现声道复用，规避通道超限静音故障
+let audioCtx: AudioContext | null = null;
+
+// 组件卸载时安全销毁音频上下文通道
+onUnmounted(() => {
+  if (audioCtx) {
+    audioCtx.close();
+  }
+});
+
 // Tick Audio feedback
 function playTickSound(tickCount: number) {
   try {
-    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
     const osc = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
     
@@ -341,7 +357,8 @@ function playTickSound(tickCount: number) {
     osc.frequency.setValueAtTime(650 + (tickCount * 12), audioCtx.currentTime); 
     
     gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.015, audioCtx.currentTime + 0.005);
+    // 关键优化：音量增益从 0.015 提升至 0.09，使跳动感音效更加响亮醒目
+    gainNode.gain.linearRampToValueAtTime(0.09, audioCtx.currentTime + 0.005);
     gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.04);
     
     osc.connect(gainNode);
@@ -355,23 +372,30 @@ function playTickSound(tickCount: number) {
 // Success chords
 function playSuccessChord() {
   try {
-    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
     const freqs = [523.25, 659.25, 783.99, 1046.50];
     
     freqs.forEach((f, idx) => {
-      const osc = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
+      const osc = audioCtx!.createOscillator();
+      const gainNode = audioCtx!.createGain();
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(f, audioCtx.currentTime + idx * 0.08);
+      osc.frequency.setValueAtTime(f, audioCtx!.currentTime + idx * 0.08);
       
-      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.035, audioCtx.currentTime + idx * 0.08 + 0.03);
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.6);
+      gainNode.gain.setValueAtTime(0, audioCtx!.currentTime);
+      // 关键优化：中奖成功和弦音量增益由 0.035 提升至 0.20，增强氛围仪式感
+      gainNode.gain.linearRampToValueAtTime(0.20, audioCtx!.currentTime + idx * 0.08 + 0.03);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx!.currentTime + 1.6);
       
       osc.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 1.9);
+      gainNode.connect(audioCtx!.destination);
+      osc.start(audioCtx!.currentTime + idx * 0.08);
+      osc.stop(audioCtx!.currentTime + idx * 0.08 + 1.9);
     });
   } catch (e) {}
 }

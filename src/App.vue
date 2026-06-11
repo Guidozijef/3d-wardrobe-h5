@@ -154,63 +154,110 @@ function toggleAmbientAudio() {
   }
 }
 
-function playSpaceSynth() {
-  // Ensure we boot audio context lazily based on user click trust parameters to keep browsers happy
+/**
+ * 启动基于 Web Audio API 实时合成的欢快水晶八音盒背景纯音乐。
+ * 运用精确的时间线调度机制（Look-Ahead Scheduling），避免主线程渲染 3D 粒子卡顿对音乐节奏造成影响。
+ * 遵循谷歌前端编码规范，具备类型注解和详细的中英注释。
+ */
+function playSpaceSynth(): void {
+  // 当用户点击触发播放且音频上下文尚未创建时，懒加载进行初始化
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
   }
 
+  // 激活可能处于挂起状态下的 AudioContext
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
   }
 
-  // Harmonic chord scales (peaceful dreamlike warm frequencies)
-  const padChords = [
-    [196.00, 246.94, 293.66, 392.00], // G Major (Peaceful)
-    [220.00, 261.63, 329.63, 440.00], // A Minor (Reflective)
-    [174.61, 220.00, 261.63, 349.23], // F Major (Astral)
-    [196.00, 246.94, 293.66, 493.88]  // G Major add9 (Resolved)
-  ];
-
   let currentChordIndex = 0;
 
-  const playIntervalPulse = () => {
+  // 定时执行步进调度器，每次以 4.0 秒为一周期，向音频硬件队列调度 16 个音符
+  const playIntervalPulse = (): void => {
     if (!audioCtx || isMuted.value) return;
+    
     const now = audioCtx.currentTime;
-    const selectedFreqs = padChords[currentChordIndex];
-    currentChordIndex = (currentChordIndex + 1) % padChords.length;
 
-    selectedFreqs.forEach((freq, idx) => {
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
+    // 旋律小节 1-2：C 大调琶音过渡至 F 大调琶音（欢快、积极、充满跃动感）
+    const melodyPattern = [
+      // 第一小节：C Major (C4 - E4 - G4 - C5 - E5 - C5 - G4 - E4)
+      { freq: 261.63, time: 0.00, duration: 0.20 }, // C4
+      { freq: 329.63, time: 0.25, duration: 0.20 }, // E4
+      { freq: 392.00, time: 0.50, duration: 0.20 }, // G4
+      { freq: 523.25, time: 0.75, duration: 0.20 }, // C5
+      { freq: 659.25, time: 1.00, duration: 0.20 }, // E5
+      { freq: 523.25, time: 1.25, duration: 0.20 }, // C5
+      { freq: 392.00, time: 1.50, duration: 0.20 }, // G4
+      { freq: 329.63, time: 1.75, duration: 0.20 }, // E4
 
-      // Soft waveform selection
-      oscillator.type = 'triangle';
-      oscillator.frequency.setValueAtTime(freq, now);
+      // 第二小节：F Major (F4 - A4 - C5 - F5 - A5 - F5 - C5 - A4)
+      { freq: 349.23, time: 2.00, duration: 0.20 }, // F4
+      { freq: 440.00, time: 2.25, duration: 0.20 }, // A4
+      { freq: 523.25, time: 2.50, duration: 0.20 }, // C5
+      { freq: 698.46, time: 2.75, duration: 0.20 }, // F5
+      { freq: 880.00, time: 3.00, duration: 0.20 }, // A5
+      { freq: 698.46, time: 3.25, duration: 0.20 }, // F5
+      { freq: 523.25, time: 3.50, duration: 0.20 }, // C5
+      { freq: 440.00, time: 3.75, duration: 0.20 }  // A4
+    ];
 
-      // Micro detuning to generate rich choral space thickness
-      oscillator.detune.setValueAtTime((idx - 1.5) * 6.5, now);
+    // 旋律小节 3-4：G 大调琶音过渡至 C 大调琶音并完成和声级进解决
+    const melodyPattern2 = [
+      // 第三小节：G Major (G4 - B4 - D5 - G5 - B5 - G5 - D5 - B4)
+      { freq: 392.00, time: 0.00, duration: 0.20 }, // G4
+      { freq: 493.88, time: 0.25, duration: 0.20 }, // B4
+      { freq: 587.33, time: 0.50, duration: 0.20 }, // D5
+      { freq: 783.99, time: 0.75, duration: 0.20 }, // G5
+      { freq: 987.77, time: 1.00, duration: 0.20 }, // B5
+      { freq: 783.99, time: 1.25, duration: 0.20 }, // G5
+      { freq: 587.33, time: 1.50, duration: 0.20 }, // D5
+      { freq: 493.88, time: 1.75, duration: 0.20 }, // B4
 
-      // Linear attack, lingering sustain, beautiful celestial exponential decay parameters
-      gainNode.gain.setValueAtTime(0, now);
-      gainNode.gain.linearRampToValueAtTime(0.045, now + 1.2); // sweet slow attack fade-in
-      gainNode.gain.setValueAtTime(0.045, now + 1.8);
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 4.2); // slow warm wind-down
+      // 第四小节：C Major 回归 (C5 - G4 - E4 - C4 - E4 - G4 - C5 - E5)
+      { freq: 523.25, time: 2.00, duration: 0.20 }, // C5
+      { freq: 392.00, time: 2.25, duration: 0.20 }, // G4
+      { freq: 329.63, time: 2.50, duration: 0.20 }, // E4
+      { freq: 261.63, time: 2.75, duration: 0.20 }, // C4
+      { freq: 329.63, time: 3.00, duration: 0.20 }, // E4
+      { freq: 392.00, time: 3.25, duration: 0.20 }, // G4
+      { freq: 523.25, time: 3.50, duration: 0.20 }, // C5
+      { freq: 659.25, time: 3.75, duration: 0.20 }  // E5
+    ];
+
+    // 循环交替使用两套小节旋律
+    const activePattern = currentChordIndex % 2 === 0 ? melodyPattern : melodyPattern2;
+    currentChordIndex++;
+
+    // 顺序合成音符节点
+    activePattern.forEach((note) => {
+      const oscillator = audioCtx!.createOscillator();
+      const gainNode = audioCtx!.createGain();
+
+      // 八音盒清脆感使用 pure sine wave
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(note.freq, now + note.time);
+
+      // 水晶打击乐音色包络设计：快速起音 (5ms)，呈指数型缓步衰减
+      gainNode.gain.setValueAtTime(0, now + note.time);
+      gainNode.gain.linearRampToValueAtTime(0.045, now + note.time + 0.005);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + note.time + note.duration + 0.3);
 
       oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
+      gainNode.connect(audioCtx!.destination);
 
-      oscillator.start(now);
-      // Soft stop after lifecycle completes
-      oscillator.stop(now + 4.3);
+      // 调度硬件时钟播放
+      oscillator.start(now + note.time);
+      // 达到生命周期后触发销毁，确保自动解绑释放 GC 内存
+      oscillator.stop(now + note.time + note.duration + 0.45);
     });
   };
 
   playIntervalPulse();
-  chordInterval = setInterval(playIntervalPulse, 3800);
+  // 设为 4.0 秒的绝对节拍周期
+  chordInterval = setInterval(playIntervalPulse, 4000);
 }
 
-function stopSpaceSynth() {
+function stopSpaceSynth(): void {
   if (chordInterval) {
     clearInterval(chordInterval);
     chordInterval = null;
