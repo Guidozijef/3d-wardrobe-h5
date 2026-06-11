@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Space Grotesk", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, monospace;
+  
+  --color-neon-pink: #ff5e8c;
+  --color-neon-cyan: #ffd27a;
+  --color-neon-purple: #c84095;
+  --color-cyber-gold: #ffe08a;
+  --color-cyber-dark: #140411;
+}
+
+/* Base resets & custom scrollbar to match love theme */
+html, body {
+  background: radial-gradient(circle at top, #360721 0%, #160113 75%, #0d010d 100%);
+  color: #fff0f5;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  width: 100%;
+  min-height: 100dvh;
+}
+
+/* Premium smooth custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(22, 1, 19, 0.95);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 94, 140, 0.3);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 94, 140, 0.6);
+}
+
+/* Romantic mesh light background */
+.hologram-grid {
+  background-image: 
+    radial-gradient(at 10% 20%, rgba(255, 94, 140, 0.12) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(189, 0, 255, 0.1) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(255, 210, 122, 0.08) 0px, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Warm Romantic Glow Text Utilities */
+.neon-text-pink {
+  text-shadow: 0 0 6px rgba(255, 94, 140, 0.5), 
+               0 0 12px rgba(255, 94, 140, 0.4), 
+               0 0 25px rgba(255, 94, 140, 0.2);
+}
+
+.neon-text-cyan {
+  text-shadow: 0 0 6px rgba(255, 210, 122, 0.5), 
+               0 0 12px rgba(255, 210, 122, 0.4), 
+               0 0 25px rgba(255, 210, 122, 0.2);
+}
+
+.neon-border-pink {
+  box-shadow: 0 0 15px rgba(255, 94, 140, 0.25),
+              inset 0 0 8px rgba(255, 94, 140, 0.15);
+}
+
+.neon-border-cyan {
+  box-shadow: 0 0 15px rgba(255, 210, 122, 0.25),
+              inset 0 0 8px rgba(255, 210, 122, 0.15);
+}
+
+/* Gentle love beat animations */
+@keyframes heartBeatScale {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.animate-heart-beat {
+  animation: heartBeatScale 2.4s infinite ease-in-out;
+}
+
+/* Smooth lock transitions */
+.page-fade-enter-active, .page-fade-leave-active {
+  transition: opacity 0.8s ease;
+}
+.page-fade-enter-from, .page-fade-leave-to {
+  opacity: 0;
+}
