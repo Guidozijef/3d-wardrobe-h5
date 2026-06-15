@@ -33,7 +33,7 @@
       <transition name="letter-fade">
         <div 
           v-if="isBlownOut"
-          class="w-full p-6 my-auto rounded-3xl bg-black/85 border border-[#ffd27a]/45 backdrop-blur-xl shadow-[0_0_50px_rgba(255,210,122,0.25)] flex flex-col items-center justify-center text-center pointer-events-auto transform transition-all duration-1000 scale-100"
+          class="w-full p-6 my-auto rounded-3xl bg-black/85 border border-[#ffd27a]/45 backdrop-blur-xl shadow-[0_0_50px_rgba(255,210,122,0.25)] flex flex-col items-center justify-center text-center pointer-events-auto transform transition-all duration-1000 scale-100 relative"
         >
           <span class="px-3.5 py-1 rounded-full bg-[#ffd27a]/15 text-[#ffd27a] font-sans text-[10px] tracking-widest border border-[#ffd27a]/40 mb-4 animate-pulse uppercase">
             ❤ Dearest Wife // 挚爱手写信
@@ -53,13 +53,33 @@
             <p class="text-[11px] text-[#ffd27a] text-right mt-6 font-bold tracking-wider">
               —— 爱你的老公 💖
             </p>
+
+            <!-- 信纸上的印章盖印效果 -->
+            <div v-if="isSealed" class="absolute bottom-4 right-10 w-20 h-20 rounded-full border-4 border-red-500/70 flex items-center justify-center font-bold text-red-500 rotate-[-15deg] select-none pointer-events-none animate-[stampZoom_0.35s_ease-out]" style="border-style: double;">
+              <div class="text-[8px] leading-tight flex flex-col items-center scale-90">
+                <span>★ ★ ★</span>
+                <span>老公承诺</span>
+                <span class="text-[9px] border-t border-red-500 mt-0.5 pt-0.5">终生有效</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 签署老公终身保证条约 -->
+          <div class="w-full mt-4">
+            <button 
+              @click="openPromiseModal"
+              class="w-full py-2.5 rounded-xl border border-[#ffd27a] bg-[#ffd27a]/5 hover:bg-[#ffd27a]/15 text-[#ffd27a] font-bold text-xs tracking-widest uppercase cursor-pointer transition-all flex items-center justify-center gap-1.5"
+              id="open_promise_btn"
+            >
+              <span>{{ isSealed ? '📝 查看保证书条款' : '📜 签署老公终身保证条约' }}</span>
+            </button>
           </div>
 
           <!-- 重温旅程按钮 -->
-          <div class="w-full mt-6">
+          <div class="w-full mt-2">
             <button 
               @click="restartJourney"
-              class="w-full py-3 rounded-xl border border-[#ff5e8c] bg-gradient-to-r from-[#ff5e8c] to-[#c84095] text-white font-bold tracking-widest text-xs uppercase cursor-pointer transform hover:scale-102 transition-all shadow-[0_4px_20px_rgba(255,94,140,0.35)]"
+              class="w-full py-2.5 rounded-xl border border-[#ff5e8c] bg-gradient-to-r from-[#ff5e8c] to-[#c84095] text-white font-bold tracking-widest text-xs uppercase cursor-pointer transform hover:scale-102 transition-all shadow-[0_4px_20px_rgba(255,94,140,0.3)]"
               id="restart_h5_btn"
             >
               ↩ 重温甜蜜星河旅程
@@ -67,6 +87,100 @@
           </div>
         </div>
       </transition>
+
+      <!-- 搞笑保证书弹窗 (模态框) -->
+      <transition name="modal-fade">
+        <div 
+          v-if="showPromiseModal" 
+          class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md pointer-events-auto"
+        >
+          <!-- 保证书主体卡片 -->
+          <div 
+            class="relative w-full max-w-sm rounded-3xl bg-neutral-950 border border-[#ffd27a]/40 p-6 shadow-[0_0_60px_rgba(255,210,122,0.2)] flex flex-col text-center"
+            @click.stop
+          >
+            <!-- 关闭按钮 -->
+            <button 
+              @click="closePromiseModal"
+              class="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer"
+            >
+              ✕
+            </button>
+
+            <!-- 保证书标题 -->
+            <span class="font-serif italic text-xs text-[#ffd27a] tracking-[0.15em] mb-1">
+              Treaty of Sweet Responsibility // 甜蜜盟约
+            </span>
+            <h3 class="text-lg font-bold text-white tracking-widest mb-4">
+              老公终身行为规范保证书
+            </h3>
+
+            <!-- 保证条款列表 (一屏全部展示，不使用滚动条) -->
+            <div class="space-y-2.5 py-3 border-y border-[#ffd27a]/20 font-sans text-left text-[11px] text-gray-300 leading-normal">
+              <div class="flex gap-1.5">
+                <span class="text-[#ffd27a] font-mono">01.</span>
+                <p><strong>首席赞美官：</strong> 老公每日须变着花样赞美老婆三次以上，老婆换新衣服或发型时须在三秒内给出满分好评。</p>
+              </div>
+              <div class="flex gap-1.5">
+                <span class="text-[#ffd27a] font-mono">02.</span>
+                <p><strong>财务绝对主权：</strong> 所有零花钱按时上缴老婆审批，不藏私房钱，老婆看中的心仪礼物必须光速付款。</p>
+              </div>
+              <div class="flex gap-1.5">
+                <span class="text-[#ffd27a] font-mono">03.</span>
+                <p><strong>宠溺投降准则：</strong> 吵架时老婆说的一切永远正确！若老婆不开心，老公必须在三分钟内主动哄抱，无条件投降。</p>
+              </div>
+              <div class="flex gap-1.5">
+                <span class="text-[#ffd27a] font-mono">04.</span>
+                <p><strong>深夜暖心外卖：</strong> 只要老婆深夜觉得饿，老公必须光速下单或下楼跑腿采购夜宵，双手热气腾腾地呈递床前。</p>
+              </div>
+              <div class="flex gap-1.5">
+                <span class="text-[#ffd27a] font-mono">05.</span>
+                <p><strong>专属情绪树洞：</strong> 老婆不开心时，老公必须做满分倾听者，禁止讲任何大道理，坚决且盲目地站在老婆这边！</p>
+              </div>
+            </div>
+
+            <!-- 印章展示容器 -->
+            <div class="relative h-16 w-full flex items-center justify-center mt-2">
+              <transition name="stamp-pop">
+                <div 
+                  v-if="isSealed" 
+                  class="absolute z-10 w-24 h-24 rounded-full border-4 border-red-500/80 flex items-center justify-center font-bold text-red-500 rotate-[-12deg] tracking-widest text-center shadow-[0_0_15px_rgba(239,68,68,0.2)] bg-neutral-950/60 backdrop-blur-xs select-none"
+                  style="border-style: double;"
+                >
+                  <div class="text-[10px] leading-tight flex flex-col items-center">
+                    <span>★ ★ ★</span>
+                    <span>老公承诺</span>
+                    <span class="text-xs border-t border-red-500 mt-0.5 pt-0.5">终生有效</span>
+                  </div>
+                </div>
+              </transition>
+            </div>
+
+            <!-- 盖章按钮 -->
+            <div class="mt-4 flex flex-col gap-2">
+              <button 
+                v-if="!isSealed"
+                @click="applySeal"
+                class="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 via-rose-500 to-red-600 text-white font-bold uppercase tracking-wider text-xs active:scale-98 transition-all cursor-pointer text-center animate-pulse shadow-[0_4px_15px_rgba(239,68,68,0.4)]"
+                id="apply_seal_btn"
+              >
+                🛑 一键盖章生效
+              </button>
+              <button 
+                v-else
+                @click="closePromiseModal"
+                class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold uppercase tracking-wider text-xs active:scale-98 transition-all cursor-pointer text-center shadow-[0_4px_15px_rgba(16,185,129,0.3)]"
+                id="apply_seal_done_btn"
+              >
+                ✅ 协议已生效 (放入回忆柜)
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
+
+      <!-- 飘散表情雨容器 -->
+      <div class="fixed inset-0 pointer-events-none z-50 overflow-hidden" ref="particlesContainer"></div>
 
       <!-- 底部版权信息 -->
       <div class="w-full text-center mb-8">
@@ -97,6 +211,11 @@ const emit = defineEmits<{
 
 const canvasContainer = ref<HTMLDivElement | null>(null);
 const isBlownOut = ref(false);
+
+// 保证书模态框状态与盖章状态
+const showPromiseModal = ref(false);
+const isSealed = ref(false);
+const particlesContainer = ref<HTMLDivElement | null>(null);
 
 // Three.js 核心对象（非响应式，保障高性能）
 let scene: THREE.Scene;
@@ -876,6 +995,152 @@ function playBirthdayMelody() {
 }
 
 /**
+ * 打开保证书弹窗
+ */
+function openPromiseModal() {
+  showPromiseModal.value = true;
+}
+
+/**
+ * 关闭保证书弹窗
+ */
+function closePromiseModal() {
+  showPromiseModal.value = false;
+}
+
+/**
+ * 一键盖章生效
+ */
+function applySeal() {
+  if (isSealed.value) return;
+  isSealed.value = true;
+  
+  // 播放合成重击音效
+  playStampSound();
+  
+  // 激发全屏飘散心心表情雨
+  spawnEmojiParticles();
+}
+
+/**
+ * 使用 Web Audio 合成模拟木质印章敲下重击音效 (低频扫频 + 滤波带通白噪声)
+ */
+function playStampSound() {
+  try {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
+    const now = audioCtx.currentTime;
+    
+    // 1. 低频撞击扫频三角波 (150Hz -> 40Hz)
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(150, now);
+    osc.frequency.exponentialRampToValueAtTime(40, now + 0.15);
+    
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(0.35, now + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+    
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    osc.start();
+    osc.stop(now + 0.26);
+
+    // 2. 模拟物理摩擦的噪声声部，增加敲击木质感
+    const bufferSize = audioCtx.sampleRate * 0.1; 
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    
+    const noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = buffer;
+    
+    // 采用带通滤波器让噪声偏向中低频率，模拟纸张震动
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 300;
+    
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(0.12, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+    
+    noiseSource.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+    
+    noiseSource.start();
+    noiseSource.stop(now + 0.1);
+  } catch (e) {
+    console.error('播放盖章音效失败:', e);
+  }
+}
+
+/**
+ * 屏幕中心激发生动的爱心/玫瑰/飞吻表情粒子爆炸扩散，随后随重力优雅飘落
+ */
+function spawnEmojiParticles() {
+  if (!particlesContainer.value) return;
+  
+  const emojis = ['💖', '🌸', '😘', '✨', '🌹', '💑', '🍬', '🥰', '💌'];
+  const count = 35;
+  const rect = particlesContainer.value.getBoundingClientRect();
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.position = 'absolute';
+    el.style.left = `${centerX}px`;
+    el.style.top = `${centerY}px`;
+    el.style.fontSize = `${16 + Math.random() * 24}px`;
+    el.style.userSelect = 'none';
+    el.style.pointerEvents = 'none';
+    el.style.zIndex = '99';
+    particlesContainer.value.appendChild(el);
+
+    // 计算随机喷射角度与距离
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 80 + Math.random() * 220;
+    
+    const tl = gsap.timeline({
+      onComplete: () => {
+        el.remove();
+      }
+    });
+
+    // 1. 瞬间爆开喷射
+    tl.to(el, {
+      x: Math.cos(angle) * distance,
+      y: Math.sin(angle) * distance,
+      rotation: (Math.random() - 0.5) * 360,
+      opacity: 1,
+      duration: 0.45,
+      ease: 'power2.out'
+    });
+
+    // 2. 接着重力飘散下落
+    tl.to(el, {
+      y: rect.height + 40,
+      opacity: 0,
+      rotation: (Math.random() - 0.5) * 720,
+      duration: 2.2 + Math.random() * 1.5,
+      ease: 'sine.in'
+    }, '+=0.1');
+  }
+}
+
+/**
  * 重置 H5 回到起点重温
  */
 function restartJourney() {
@@ -900,4 +1165,40 @@ function restartJourney() {
     linear-gradient(90deg, rgba(255, 255, 255, 0.007) 1px, transparent 1px);
   background-size: 100% 100%, 20px 20px, 20px 20px;
 }
+
+/* 模态框渐入渐出 */
+.modal-fade-enter-active, .modal-fade-leave-active {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.modal-fade-enter-from, .modal-fade-leave-to {
+  opacity: 0;
+}
+
+/* 印章敲下缩放震动动画 */
+@keyframes stampZoom {
+  0% {
+    transform: scale(3.5) rotate(-45deg);
+    opacity: 0;
+    filter: blur(4px);
+  }
+  65% {
+    transform: scale(0.9) rotate(-10deg);
+    opacity: 0.9;
+  }
+  85% {
+    transform: scale(1.1) rotate(-14deg);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(1) rotate(-12deg);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* 弹窗内印章入场 */
+.stamp-pop-enter-active {
+  animation: stampZoom 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
 </style>

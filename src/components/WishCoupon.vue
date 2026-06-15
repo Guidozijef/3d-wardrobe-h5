@@ -157,17 +157,84 @@
 
         <!-- Confirm action buttons -->
         <div class="mt-5 flex flex-col gap-2">
-          <p class="text-[10px] text-gray-400 text-center leading-relaxed font-sans">
-            💡 提示：本券已自动保存归档，随时可找老公兑付 💝
-          </p>
-          <button 
-            @click="redeemedReceipt = null"
-            class="w-full py-3 mt-2 rounded-xl text-white font-bold uppercase tracking-widest text-xs active:scale-98 transition-all cursor-pointer text-center"
-            :class="[themeClasses.gradientConfirm]"
-            id="close_receipt_btn"
-          >
-            放入专属回忆柜
-          </button>
+          <!-- 未召唤老公时的默认显示 -->
+          <template v-if="!isSummoned">
+            <p class="text-[10px] text-gray-400 text-center leading-relaxed font-sans">
+              💡 提示：本券已自动保存归档，随时可找老公兑付 💝
+            </p>
+
+            <button 
+              @click="closeReceipt"
+              class="w-full py-2.5 mt-1 rounded-xl text-white font-bold uppercase tracking-widest text-xs active:scale-98 transition-all cursor-pointer text-center"
+              :class="[themeClasses.gradientConfirm]"
+              id="close_receipt_btn"
+            >
+              放入专属回忆柜
+            </button>
+          </template>
+
+          <!-- 激活召唤老公承兑面板 -->
+          <template v-else>
+            <div class="p-3.5 rounded-2xl bg-red-950/20 border border-red-500/30 backdrop-blur-md text-left space-y-2 relative overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-r from-red-500/5 via-transparent to-rose-500/5 pointer-events-none"></div>
+              
+              <div class="flex justify-between items-center border-b border-red-500/20 pb-2">
+                <span class="text-xs font-bold text-red-400 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
+                  🎯 承兑监控中
+                </span>
+                <span 
+                  class="font-mono text-xs px-2 py-0.5 rounded border"
+                  :class="[
+                    elapsedSeconds >= 600
+                      ? 'text-red-400 bg-red-950/80 border-red-500 animate-pulse'
+                      : 'text-white bg-red-900/40 border-red-500/30'
+                  ]"
+                >
+                  {{ elapsedSeconds >= 600 ? '⚠️ 超时中' : formatTime(600 - elapsedSeconds) }}
+                </span>
+              </div>
+              
+              <p class="text-[11px] text-gray-300 leading-relaxed font-sans">
+                <span class="text-[#ffd27a] font-bold">老公已被系统强制接单</span>，正在光速赶来执行！请线下开始计时监督。
+              </p>
+              
+              <div class="pt-1.5 border-t border-red-500/10 flex flex-col gap-1 text-[10px] text-gray-400 font-sans">
+                <div class="flex justify-between">
+                  <span>⚠️ 超时违约惩罚:</span>
+                  <span class="text-red-400 font-bold">每延误1分钟罚亲亲一下 😘</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>已耗时间:</span>
+                  <span class="text-white font-mono">{{ formatTime(elapsedSeconds) }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span>当前累计应罚:</span>
+                  <span class="text-red-400 font-black text-xs animate-bounce flex items-center gap-0.5">
+                    {{ elapsedMinutes }} 次亲亲 😘
+                  </span>
+                </div>
+              </div>
+              
+              <!-- 监工面板交互按钮 -->
+              <div class="flex gap-2 pt-1">
+                <button 
+                  @click="completeSummon"
+                  class="flex-1 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] tracking-wider transition-colors active:scale-95 cursor-pointer text-center"
+                  id="complete_summon_btn"
+                >
+                  ✅ 承兑完成 (放过他)
+                </button>
+                <button 
+                  @click="cancelSummon"
+                  class="py-2 px-2.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-gray-400 font-bold text-[10px] transition-colors active:scale-95 cursor-pointer text-center"
+                  id="cancel_summon_btn"
+                >
+                  取消
+                </button>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -181,6 +248,7 @@
       >
         前往压轴生日庆典 🎂 ➔
       </button>
+      <div style="font-size: 12px;">最终解释权归老公所有</div>
     </div>
 
   </div>
@@ -262,42 +330,42 @@ const coupons = [
   {
     id: 1,
     name: '家务免单券',
-    price: '免费 // 老公包办',
+    price: '免费 // 老公包办(一个月)',
     code: 'HOME-WIFE-001',
     icon: '🧹'
   },
   {
     id: 2,
-    name: '清空购物车',
-    price: '秒付 // 宠溺度满配',
+    name: '畅享购物券',
+    price: '秒付 // 当天所有购物老公买单',
     code: 'PAY-CART-999',
     icon: '🛒'
   },
   {
     id: 3,
-    name: '热吻治愈券',
-    price: '免费 // 随叫随到',
+    name: '亲亲抱抱券',
+    price: '免费 // 随时随地记录爱意',
     code: 'WARM-HUG-888',
-    icon: '🤗'
+    icon: '😘'
   },
   {
     id: 4,
-    name: '神秘大礼券',
-    price: '保密 // 特别大惊喜',
+    name: '现金红包',
+    price: '2000元 // 老公转账',
     code: 'MYSTERY-GIFT-SOL',
     icon: '🎁'
   },
   {
     id: 5,
-    name: '定制大餐券',
-    price: '点单 // 食材尽享奢华',
+    name: '定制烛光晚餐券',
+    price: '即刻兑现 // 烛光晚餐',
     code: 'CHEF-GRAND-005',
     icon: '🍳'
   },
   {
     id: 6,
     name: '浪漫旅行券',
-    price: '即刻出发 // 终生兑现',
+    price: '国庆节 // 双人游',
     code: 'TRIP-PLAN-2026',
     icon: '✈️'
   }
@@ -321,6 +389,126 @@ interface ReceiptSchema {
 
 const redeemedReceipt = ref<ReceiptSchema | null>(null);
 
+// ==================== 情侣互动：召唤老公即时承兑系统 ====================
+// 是否开启了召唤老公状态
+const isSummoned = ref(false);
+// 召唤已耗时（秒）
+const elapsedSeconds = ref(0);
+// 召唤定时器句柄
+let summonTimer: any = null;
+
+// 计算已耗时的分钟数，用于计算惩罚“亲亲”次数
+const elapsedMinutes = computed(() => {
+  return Math.floor(elapsedSeconds.value / 60);
+});
+
+/**
+ * 启动召唤老公承兑功能，开始倒计时并播放蜂鸣警报
+ */
+function summonHusband() {
+  isSummoned.value = true;
+  elapsedSeconds.value = 0;
+  playSummonBuzzer();
+  
+  if (summonTimer) {
+    clearInterval(summonTimer);
+  }
+  summonTimer = setInterval(() => {
+    elapsedSeconds.value++;
+  }, 1000);
+}
+
+/**
+ * 取消本次召唤，清空定时器
+ */
+function cancelSummon() {
+  isSummoned.value = false;
+  if (summonTimer) {
+    clearInterval(summonTimer);
+    summonTimer = null;
+  }
+}
+
+/**
+ * 完成承兑，清空定时器并关闭收据弹窗
+ */
+function completeSummon() {
+  isSummoned.value = false;
+  if (summonTimer) {
+    clearInterval(summonTimer);
+    summonTimer = null;
+  }
+  redeemedReceipt.value = null;
+}
+
+/**
+ * 关闭收据弹窗，并清空召唤定时器
+ */
+function closeReceipt() {
+  redeemedReceipt.value = null;
+  cancelSummon();
+}
+
+/**
+ * 格式化秒数为 mm:ss
+ * @param seconds 秒数
+ */
+function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+/**
+ * 使用 Web Audio 合成紧急蜂鸣警报音（急促的“哔哔哔”双音交替方波）
+ */
+function playSummonBuzzer() {
+  try {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
+    const now = audioCtx.currentTime;
+    // 连续播放 3 组急促的双音警报声
+    for (let i = 0; i < 3; i++) {
+      const startTime = now + i * 0.4;
+      
+      // 第一声：880Hz 方波
+      const osc1 = audioCtx.createOscillator();
+      const gain1 = audioCtx.createGain();
+      osc1.type = 'square';
+      osc1.frequency.setValueAtTime(880, startTime);
+      gain1.gain.setValueAtTime(0, startTime);
+      gain1.gain.linearRampToValueAtTime(0.08, startTime + 0.01);
+      gain1.gain.setValueAtTime(0.08, startTime + 0.12);
+      gain1.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.15);
+      osc1.connect(gain1);
+      gain1.connect(audioCtx.destination);
+      osc1.start(startTime);
+      osc1.stop(startTime + 0.16);
+
+      // 第二声：987Hz 方波，形成刺耳的交替效果
+      const osc2 = audioCtx.createOscillator();
+      const gain2 = audioCtx.createGain();
+      osc2.type = 'square';
+      osc2.frequency.setValueAtTime(987, startTime + 0.18);
+      gain2.gain.setValueAtTime(0, startTime + 0.18);
+      gain2.gain.linearRampToValueAtTime(0.08, startTime + 0.19);
+      gain2.gain.setValueAtTime(0.08, startTime + 0.3);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.33);
+      osc2.connect(gain2);
+      gain2.connect(audioCtx.destination);
+      osc2.start(startTime + 0.18);
+      osc2.stop(startTime + 0.34);
+    }
+  } catch (e) {
+    console.error('播放召唤警报失败:', e);
+  }
+}
+
 // Manual card click detail browse
 function selectCouponManually(coupon: any, index: number) {
   if (isDrawing.value) return;
@@ -332,10 +520,13 @@ function selectCouponManually(coupon: any, index: number) {
 // 声明顶级全局单例音频上下文，实现声道复用，规避通道超限静音故障
 let audioCtx: AudioContext | null = null;
 
-// 组件卸载时安全销毁音频上下文通道
+// 组件卸载时安全销毁音频上下文通道和定时器
 onUnmounted(() => {
   if (audioCtx) {
     audioCtx.close();
+  }
+  if (summonTimer) {
+    clearInterval(summonTimer);
   }
 });
 
