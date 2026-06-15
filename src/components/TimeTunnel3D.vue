@@ -144,7 +144,7 @@ const canvasContainer = ref<HTMLDivElement | null>(null);
 // Starry tunnel and expanded romantic milestones configuration
 const timelineCards = [
   {
-    year: '2019.05',
+    year: '2023.05',
     phase: '初识星空',
     title: '时光初遇 · 灵魂引力交错',
     photo: 'https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?auto=format&fit=crop&w=400&q=80',
@@ -152,7 +152,7 @@ const timelineCards = [
     depth: 350 // Z goes from 350 to 290
   },
   {
-    year: '2020.10',
+    year: '2023.07',
     phase: '浪漫执手',
     title: '温馨执手 · 彼此轨道同步',
     photo: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80',
@@ -160,7 +160,7 @@ const timelineCards = [
     depth: 290 // Z goes from 290 to 230
   },
   {
-    year: '2022.02',
+    year: '2024.06',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
     photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
@@ -168,7 +168,7 @@ const timelineCards = [
     depth: 230 // Z goes from 230 to 170
   },
   {
-    year: '2023.11',
+    year: '2025.05',
     phase: '温馨筑巢',
     title: '橘光筑巢 · 烟火琐碎也甜',
     photo: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
@@ -176,7 +176,7 @@ const timelineCards = [
     depth: 170 // Z goes from 170 to 110
   },
   {
-    year: '2025.04',
+    year: '2025.06',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
     photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
@@ -184,7 +184,7 @@ const timelineCards = [
     depth: 110 // Z goes from 110 to 50
   },
   {
-    year: '2026.05',
+    year: '2026.06',
     phase: '璀璨今朝',
     title: '璀璨周年 · 热爱永无边界',
     photo: 'https://images.unsplash.com/photo-1531747118685-ca8fa6e08806?auto=format&fit=crop&w=400&q=80',
