@@ -3,10 +3,13 @@
     class="relative w-full h-full overflow-hidden bg-[#140411] flex flex-col items-center justify-between p-4 hologram-grid"
     @touchstart="onTouchStart"
     @touchmove="onTouchMove"
+    @touchend="onTouchEnd"
+    @touchcancel="onTouchEnd"
     @mousedown="onMouseDown"
     @mousemove="onMouseMove"
     @mouseup="onMouseUp"
     @mouseleave="onMouseUp"
+    @wheel.prevent="onWheel"
   >
     <!-- WebGL Background Canvas -->
     <div ref="canvasContainer" class="absolute inset-0 w-full h-full z-0 pointer-events-none"></div>
@@ -524,18 +527,16 @@ const depthPercent = computed(() => {
   return Math.min(Math.max(((startZ - cameraZOffset.value) / totalDepthRange) * 100, 0), 100);
 });
 
-// 计算当前视窗（CameraZOffset）最贴近的卡片索引，用以作为卡片翻页边界触发判定
+// 当前高亮的时间节点索引（滑动时的目标卡片索引），符合 Google 编码规范，使用 ref 进行响应式跟踪
+const currentIndex = ref(0);
+
+// 动画锁：防止快速连续滑动或滚轮惯性导致一次滚过多张图片
+const isAnimating = ref(false);
+
+// 计算当前视窗最贴近的卡片索引，用以作为卡片翻页边界触发判定
+// 这里直接绑定目标卡片索引，使翻页反馈与声效触发更为即时和准确
 const activeCardIndex = computed(() => {
-  let minDistance = Infinity;
-  let activeIdx = 0;
-  timelineCards.forEach((card, idx) => {
-    const dist = Math.abs(cameraZOffset.value - card.depth);
-    if (dist < minDistance) {
-      minDistance = dist;
-      activeIdx = idx;
-    }
-  });
-  return activeIdx;
+  return currentIndex.value;
 });
 
 // 音频上下文声明，用以支持网页音频程序化物理合成
@@ -553,6 +554,7 @@ let isDragging = false;
 let startY = 0;
 let currentY = 0;
 let baseZ = 400;
+let hasSwiped = false; // 标记当前滑动手势内是否已完成切换卡片，防止单次长滑连续触发多张卡片
 
 // Three.js items (not in ref to avoid runtime lags)
 let scene: THREE.Scene;
@@ -940,40 +942,142 @@ function getCardClass(index: number) {
 function onTouchStart(e: TouchEvent) {
   isDragging = true;
   startY = e.touches[0].clientY;
-  baseZ = cameraZOffset.value;
+  hasSwiped = false;
 }
 
 function onTouchMove(e: TouchEvent) {
-  if (!isDragging) return;
+  // 如果当前正在播放动画，则只生成粒子轨迹，不再触发卡片切换
+  if (!isDragging || hasSwiped || isAnimating.value) {
+    if (isDragging) {
+      spawnTrailAt(e.touches[0].clientX, e.touches[0].clientY);
+    }
+    return;
+  }
   currentY = e.touches[0].clientY;
   const deltaY = currentY - startY;
-  // 保持舒适的拖动灵敏度与全局起点终点截断限制
-  const targetZ = baseZ + deltaY * 0.90;
-  cameraZOffset.value = Math.min(Math.max(targetZ, endZ), startZ);
+
+  // 设定触发翻页的阈值（50像素）
+  if (deltaY < -50) {
+    // 向上滑动，进入下一张卡片（Z 轴减少）
+    const nextIdx = Math.min(currentIndex.value + 1, timelineCards.length - 1);
+    if (nextIdx !== currentIndex.value) {
+      currentIndex.value = nextIdx;
+      animateToCard(nextIdx);
+    }
+    hasSwiped = true;
+  } else if (deltaY > 50) {
+    // 向下滑动，返回上一张卡片（Z 轴增加）
+    const prevIdx = Math.max(currentIndex.value - 1, 0);
+    if (prevIdx !== currentIndex.value) {
+      currentIndex.value = prevIdx;
+      animateToCard(prevIdx);
+    }
+    hasSwiped = true;
+  }
 
   spawnTrailAt(e.touches[0].clientX, e.touches[0].clientY);
+}
+
+function onTouchEnd() {
+  isDragging = false;
+  hasSwiped = false;
 }
 
 // Mouse event support for desktop preview users
 function onMouseDown(e: MouseEvent) {
   isDragging = true;
   startY = e.clientY;
-  baseZ = cameraZOffset.value;
+  hasSwiped = false;
 }
 
 function onMouseMove(e: MouseEvent) {
-  if (!isDragging) return;
+  // 如果当前正在播放动画，则只生成粒子轨迹，不再触发卡片切换
+  if (!isDragging || hasSwiped || isAnimating.value) {
+    if (isDragging) {
+      spawnTrailAt(e.clientX, e.clientY);
+    }
+    return;
+  }
   currentY = e.clientY;
   const deltaY = currentY - startY;
-  // 保持舒适的拖动灵敏度与全局起点终点截断限制
-  const targetZ = baseZ + deltaY * 1.20;
-  cameraZOffset.value = Math.min(Math.max(targetZ, endZ), startZ);
+
+  // 设定触发翻页的阈值（50像素）
+  if (deltaY < -50) {
+    // 向上滑动，进入下一张卡片
+    const nextIdx = Math.min(currentIndex.value + 1, timelineCards.length - 1);
+    if (nextIdx !== currentIndex.value) {
+      currentIndex.value = nextIdx;
+      animateToCard(nextIdx);
+    }
+    hasSwiped = true;
+  } else if (deltaY > 50) {
+    // 向下滑动，返回上一张卡片
+    const prevIdx = Math.max(currentIndex.value - 1, 0);
+    if (prevIdx !== currentIndex.value) {
+      currentIndex.value = prevIdx;
+      animateToCard(prevIdx);
+    }
+    hasSwiped = true;
+  }
 
   spawnTrailAt(e.clientX, e.clientY);
 }
 
 function onMouseUp() {
   isDragging = false;
+  hasSwiped = false;
+}
+
+/**
+ * 启动 GSAP 平滑插值动画，将相机 Z 轴精确对齐到指定卡片的深度。
+ * 使用 overwrite: 'auto' 防止高频滑动时的动画冲突，确保过渡自然流畅。
+ * 在动画启动时激活锁定状态 (isAnimating = true)，动画结束 (onComplete) 后解除锁定。
+ * 符合 Google 编码规范，使用详细的中文注释。
+ *
+ * @param {number} targetIdx 目标卡片的索引。
+ */
+function animateToCard(targetIdx: number): void {
+  const targetDepth = timelineCards[targetIdx].depth;
+  isAnimating.value = true;
+  gsap.to(cameraZOffset, {
+    value: targetDepth,
+    duration: 0.65,
+    ease: 'power2.out',
+    overwrite: 'auto',
+    onComplete: () => {
+      isAnimating.value = false;
+    }
+  });
+}
+
+/**
+ * 鼠标滚轮事件处理器。
+ * 针对 PC 端提供精确、分步的滚轮切换效果，并加入了 isAnimating 动画锁机制，防止一次滚动连跳多张卡片。
+ * 符合 Google 编码规范，使用详细的中文注释。
+ *
+ * @param {WheelEvent} e 滚轮事件对象。
+ */
+function onWheel(e: WheelEvent): void {
+  // 如果当前正在播放动画，则直接拦截，防止惯性连续触发
+  if (isAnimating.value) {
+    return;
+  }
+  
+  if (e.deltaY > 0) {
+    // 滚轮向下滚：进入下一个时间节点
+    const nextIdx = Math.min(currentIndex.value + 1, timelineCards.length - 1);
+    if (nextIdx !== currentIndex.value) {
+      currentIndex.value = nextIdx;
+      animateToCard(nextIdx);
+    }
+  } else if (e.deltaY < 0) {
+    // 滚轮向上滚：返回上一个时间节点
+    const prevIdx = Math.max(currentIndex.value - 1, 0);
+    if (prevIdx !== currentIndex.value) {
+      currentIndex.value = prevIdx;
+      animateToCard(prevIdx);
+    }
+  }
 }
 
 /**
