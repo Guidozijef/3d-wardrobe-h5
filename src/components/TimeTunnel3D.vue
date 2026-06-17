@@ -48,10 +48,9 @@
             <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none z-10"></div>
             
             <img 
-              :src="card.photo" 
+              :src="getLocalImage(card.photo)" 
               alt="Memory Node Visual" 
               class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 filter saturate-[1.1]" 
-              referrerPolicy="no-referrer"
             />
             
             <!-- Corner decorations -->
@@ -141,367 +140,370 @@ const emit = defineEmits<{
 // Refs
 const canvasContainer = ref<HTMLDivElement | null>(null);
 
-// Starry tunnel and expanded romantic milestones configuration
+/**
+ * 获取本地照片的动态 URL 路径。
+ * 符合 Google 编码规范，使用 Vite 推荐的 new URL(path, import.meta.url) 模式动态解析本地资源。
+ *
+ * @param {string} fileName 图片文件名，如 '1.jpg'。
+ * @return {string} 解析后的完整 URL 字符串。
+ */
+const getLocalImage = (fileName: string): string => {
+  return new URL(`../imgs/${fileName}`, import.meta.url).href;
+};
+
+// 星空时光隧道及浪漫里程碑卡片数据配置
 const timelineCards = [
   {
     year: '2023.04',
     phase: '初识星空',
     title: '时光初遇 · 灵魂引力交错',
-    photo: 'https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?auto=format&fit=crop&w=400&q=80',
+    photo: '1.jpg',
     content: '第一次见面认识，当时前面已经聊了好几个月了，已经很了解了，一起骑绿道，当时好像一起骑了20公里，后面好像去了一个公园，被你闺蜜偷拍了我两的第一张照片，虽然只是一个背影',
-    depth: 350 // Z goes from 350 to 290
+    depth: 350 // Z 轴坐标范围自 350 渐变至 290
   },
   {
     year: '2023.06',
     phase: '浪漫执手',
     title: '温馨执手 · 彼此轨道同步',
-    photo: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80',
+    photo: '2.jpg',
     content: '你刚毕业，毕业快乐',
-    depth: 290 // Z goes from 290 to 230
+    depth: 290 // Z 轴坐标范围自 290 渐变至 230
   },
   {
     year: '2023.07',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
-    photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
+    photo: '3.jpg',
     content: '一起租了一个房子《一品天成》，周末一起去看油菜花，没想到你会主动和我一起拍照，这是我们两个的第一张合照（准确的说是第二张，但是第一张没正脸）',
-    depth: 230 // Z goes from 230 to 170
+    depth: 230 // Z 轴坐标范围自 230 渐变至 170
   },
   {
     year: '2023.08',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
-    photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
-    content: '一起去了成都自然博物馆，但是那一次好像没拍合照',
-    depth: 230 // Z goes from 230 to 170
+    photo: '4.jpg',
+    content: '一起去了成都自然博物馆，但是那一次好像没拍合照，只有我偷拍的这一张，模模糊糊的',
+    depth: 230 // Z 轴坐标范围自 230 渐变至 170
   },
   {
     year: '2023.08',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
-    photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
-    content: '追了大半年终于在一起了，这天是七夕，但是某人说我没准备好，也没提前订饭店，但是我确实也没经验，也没想到当时的万达广场没什么玩的，但是某人就很生气，让你走也不走，说实话当时我也很委屈，但是后面还是找了一个西餐厅，某人吃得很高兴，晚上我在楼下广场深情终于把某人拿下了，正式确定男女朋友关系。',
-    depth: 230 // Z goes from 230 to 170
+    photo: '5.jpg',
+    content: '追了大半年终于在一起了，这天是七夕，但是某人说我没准备好，也没提前订饭店，但是我确实也没经验，也没想到当时的万达广场没什么玩的，但是某人就很生气，让你走也不走，说实话当时我也很委屈，但是后面还是找了一个西餐厅，某人吃得很高兴，晚上我在楼下广场深情告白，终于把某人拿下了，正式确定男女朋友关系。',
+    depth: 230 // Z 轴坐标范围自 230 渐变至 170
   },
   {
     year: '2023.09',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
-    photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
+    photo: '6.jpg',
     content: '出门的日常，带你出去玩，吃好吃的，',
-    depth: 230 // Z goes from 230 to 170
+    depth: 230 // Z 轴坐标范围自 230 渐变至 170
   },
   {
     year: '2023.10',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
-    photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
+    photo: '7.jpg',
     content: '十月一国庆节，你爸说要见我，你带我回重庆去了，当时第一次去很紧张，但是嘴还是很硬的，后面我们好像去一个公园玩耍去了',
-    depth: 230 // Z goes from 230 to 170
+    depth: 230 // Z 轴坐标范围自 230 渐变至 170
   },
   {
     year: '2023.10',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
-    photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
+    photo: '8.jpg',
     content: '已经忘记了这是回重庆还是离开重庆回成都了，也不知道是什么时候拍的这张照片',
-    depth: 230 // Z goes from 230 to 170
+    depth: 230 // Z 轴坐标范围自 230 渐变至 170
   },
   {
     year: '2023.10',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
-    photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
+    photo: '9.jpg',
     content: '非要带我来试试西装，没想到我随便一穿就把某人迷到了，倒是要1000多块，最后还是没买。',
-    depth: 230 // Z goes from 230 to 170
+    depth: 230 // Z 轴坐标范围自 230 渐变至 170
   },
   {
     year: '2023.10',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
-    photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
+    photo: '10.jpg',
     content: '一起逛宽窄巷子，但是某人一路免费试吃，特别是在银耳汤那个店，每一个品类都要品尝一下，喝饱了就跑',
-    depth: 230 // Z goes from 230 to 170
+    depth: 230 // Z 轴坐标范围自 230 渐变至 170
   },
   {
     year: '2023.10',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
-    photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
+    photo: '11.jpg',
     content: '第一次一起出来玩碰碰车，我也是第一次玩，但是某人特别喜欢玩这个，里面还有很多其他的玩的，还在里面打上保龄球，也是过上了高端人士的生活了，',
-    depth: 230 // Z goes from 230 to 170
+    depth: 230 // Z 轴坐标范围自 230 渐变至 170
   },
   {
     year: '2023.11',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
-    photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
+    photo: '12.jpg',
     content: '这好像是在吃烤肉，但是为什么某人这么高兴，我已经忘了，但是你开心就好',
-    depth: 230 // Z goes from 230 to 170
+    depth: 230 // Z 轴坐标范围自 230 渐变至 170
   },
   {
     year: '2023.11',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
-    photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
+    photo: '13.jpg',
     content: '给我买的情侣睡衣，长这么大第一次穿情侣睡衣，真的很感动，虽然睡衣有点大了，但是也不影响',
-    depth: 230 // Z goes from 230 to 170
+    depth: 230 // Z 轴坐标范围自 230 渐变至 170
   },
   {
     year: '2023.11',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
-    photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
+    photo: '14.jpg',
     content: '这是你骑车我怕你冷，专门给你买的，还有一副手套，不知道现在还在不，上一次手套掉了一只，被我说了，还好被我找到了',
-    depth: 230 // Z goes from 230 to 170
+    depth: 230 // Z 轴坐标范围自 230 渐变至 170
   },
   {
     year: '2023.11',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
-    photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
+    photo: '15.jpg',
     content: '这是我给你买的情侣鞋子，这可是实拍图，真的还蛮好看的，就是质量不太行，以后有机会我再买一双，买个质量好点的，主要是好看的太难找了',
-    depth: 230 // Z goes from 230 to 170
+    depth: 230 // Z 轴坐标范围自 230 渐变至 170
   },
   {
     year: '2023.12',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
-    photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
+    photo: '16.jpg',
     content: '大早上送你去学校，这张照片是早上6点21拍的，天还没亮就起来了，真的挺心疼的要起来这么早，',
-    depth: 230 // Z goes from 230 to 170
+    depth: 230 // Z 轴坐标范围自 230 渐变至 170
   },
   {
     year: '2023.12',
     phase: '携手旅途',
     title: '逃离地心 · 奔赴蔚蓝星海',
-    photo: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=80',
+    photo: '17.jpg',
     content: '这张照片挺好看的，好看的衣服果然都是我买的',
-    depth: 230 // Z goes from 230 to 170
+    depth: 230 // Z 轴坐标范围自 230 渐变至 170
   },
   {
     year: '2024.1',
     phase: '温馨筑巢',
     title: '橘光筑巢 · 烟火琐碎也甜',
-    photo: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
+    photo: '18.jpg',
     content: '一起去人民公园，在里面划船，我其实有点怕，我可不会水呀，但是后面就没啥事，毕竟在某人面前我要装一点',
-    depth: 170 // Z goes from 170 to 110
+    depth: 170 // Z 轴坐标范围自 170 到 110
   },
   {
     year: '2024.2',
     phase: '温馨筑巢',
     title: '橘光筑巢 · 烟火琐碎也甜',
-    photo: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
+    photo: '19.jpg',
     content: '第一次带某人回老家过年，看着车一直在上山，在车上怕被我卖了，但是在我家呆着也挺舒服了，还吃了烧烤，太松弛了，太阳也很好，nice',
-    depth: 170 // Z goes from 170 to 110
+    depth: 170 // Z 轴坐标范围自 170 到 110
   },
   {
     year: '2024.2',
     phase: '温馨筑巢',
     title: '橘光筑巢 · 烟火琐碎也甜',
-    photo: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
+    photo: '20.jpg',
     content: '后面又去了重庆，一起去了重庆海洋馆好像，还拍了我们第一张实体照片，现在还在呢',
-    depth: 170 // Z goes from 170 to 110
+    depth: 170 // Z 轴坐标范围自 170 到 110
   },
   {
     year: '2024.3',
     phase: '温馨筑巢',
     title: '橘光筑巢 · 烟火琐碎也甜',
-    photo: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
+    photo: '21.jpg',
     content: '好像又去那儿玩了，但是这次好像某人因为不满意我的拍照技术特别生气，当天都没怎么说话，一直到最好才拍了这张照片，但是对于我来说每一张照片都是有意义的，只要是我们在一起就好了',
-    depth: 170 // Z goes from 170 to 110
+    depth: 170 // Z 轴坐标范围自 170 到 110
   },
   {
     year: '2024.3',
     phase: '温馨筑巢',
     title: '橘光筑巢 · 烟火琐碎也甜',
-    photo: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
+    photo: '22.jpg',
     content: '已经忘记了是什么原因你没回来，好像在外面露营，睡的帐篷，我跟你在视频，我还在加班，后面你睡了，我就挂了',
-    depth: 170 // Z goes from 170 to 110
+    depth: 170 // Z 轴坐标范围自 170 到 110
   },
   {
     year: '2024.3',
     phase: '温馨筑巢',
     title: '橘光筑巢 · 烟火琐碎也甜',
-    photo: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
+    photo: '23.jpg',
     content: '我又忘了这是什么节日还是什么了，带你去了双子塔，拍了些照片，离我上班还挺近的',
-    depth: 170 // Z goes from 170 to 110
+    depth: 170 // Z 轴坐标范围自 170 到 110
   },
   {
     year: '2024.8',
     phase: '温馨筑巢',
     title: '橘光筑巢 · 烟火琐碎也甜',
-    photo: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
-    content: '这都到8月份了，但是我们怎么没有什么照片，这是你带我去温泉酒店游泳拍的，其实还挺好玩的，就是泡温泉男女要分开不好，我还是挺帅的',
-    depth: 170 // Z goes from 170 to 110
-  },
-  {
-    year: '2024.8',
-    phase: '温馨筑巢',
-    title: '橘光筑巢 · 烟火琐碎也甜',
-    photo: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
+    photo: '24.jpg',
     content: '这都到8月份了，但是我们怎么没有什么照片，这时候已经搬家到《燕南国际》了，这是你带我去温泉酒店游泳拍的，其实还挺好玩的，就是泡温泉男女要分开不好',
-    depth: 170 // Z goes from 170 to 110
+    depth: 170 // Z 轴坐标范围自 170 到 110
   },
   {
     year: '2024.10',
     phase: '温馨筑巢',
     title: '橘光筑巢 · 烟火琐碎也甜',
-    photo: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
+    photo: '25.jpg',
     content: '又到国庆了，这次我们又去重庆玩去了，我社牛的喊人给我们拍的照片，这是朝天门，人真的好多呀，',
-    depth: 170 // Z goes from 170 to 110
+    depth: 170 // Z 轴坐标范围自 170 到 110
   },
   {
     year: '2024.11',
     phase: '温馨筑巢',
     title: '橘光筑巢 · 烟火琐碎也甜',
-    photo: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
-    content: '第一次来新房子，有自己的房子了，还天天忙着看装修风格和家具，两个人什么都不懂，还好我感觉我们运气还挺好的，走到那儿那儿打折促销，买的东西性价比都挺高的，也挺好看的，装修了大半年，到现在床头柜和电视柜都还没有',
-    depth: 170 // Z goes from 170 to 110
+    photo: '26.jpg',
+    content: '第一次来新房子，有自己的房子了，还天天忙着看装修风格 and 家具，两个人什么都不懂，还好我感觉我们运气还挺好的，走到那儿那儿打折促销，买的东西性价比都挺高的，也挺好看的，装修了大半年，到现在床头柜和电视柜都还没有',
+    depth: 170 // Z 轴坐标范围自 170 到 110
   },
   {
     year: '2025.2',
     phase: '温馨筑巢',
     title: '橘光筑巢 · 烟火琐碎也甜',
-    photo: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
+    photo: '27.jpg',
     content: '计划结婚了，订婚宴上给你买的花花，真的太好看了，又有排面，我从重庆一直拿到成都来了，可惜后面用来泡脚了，可惜订婚宴上也没给你买上好看的衣服，但是结婚大局已定，正式成为我的未婚妻了',
-    depth: 170 // Z goes from 170 to 110
+    depth: 170 // Z 轴坐标范围自 170 到 110
   },
   {
     year: '2025.03',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '28.jpg',
     content: '一起去了东郊记忆，但是好像没什么玩的，玩什么不重要，开心就好',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2025.04',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '29.jpg',
     content: '这张艺术照很有感觉，真不错',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2025.05',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '30.jpg',
     content: '拍婚纱照了，大老远跑去青白江拍婚纱照了，累坏了，拍的也还行，也不算贵，只是后期处理没处理好，好在把照片源文件全都拿回来了，以后可以自己来修图',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2025.05',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '31.jpg',
     content: '这是在那儿玩，我已经忘记了，但是开心就好，不对我想起来了，好像是欢乐谷，那过山车真的吓坏了，某人眼睛都不敢睁开，再也不去了，太吓人了',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2025.05',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '32.jpg',
     content: '恭喜老板，喜提一辆玛莎拉蒂，太有牌面了，哈哈（以后有钱高低跟你整一辆）',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2025.05',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '33.jpg',
     content: '520领结婚证啦，正式成为有证夫妻，这下可跑不掉了，哈哈哈哈，我那天怎么忘记挂胡子了，我专门准备的头纱，到现场有现成的，不过后面用完就退了',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2025.05',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '34.jpg',
     content: '海底捞凭结婚证打折了，开心，带你吃顿好的，还有仪仗队，仪式感拉满了',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2025.08',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '35.jpg',
     content: '筹备婚礼用品了，宝宝辛苦了，全程自己筹备，，给宝宝点个赞，这套睡衣太喜庆了，马上结婚啦',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2025.09',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '36.jpg',
     content: '这张照片也特别好看，郎才女貌，太好看了',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2025.10',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '37.jpg',
     content: '结婚啦，抢亲了，太激动了，跑楼道摔了我一跟头，赶紧让摄影师砍掉，本来想临场发挥让你感动的，结果拉一坨大的，没想到你还准备得挺好的，说得挺不错的',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2025.12',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '38.jpg',
     content: '偷一张你的大图，就当总结了',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2026.01',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '39.jpg',
     content: '加油小孙，马上有财，马上有钱',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2026.01',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '40.jpg',
     content: '大家一起跨年，我很喜欢这种感觉，上班太累了，大家聚在一起开开心心，真是难得的时光',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2026.02',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '41.jpg',
     content: '又被我套路了，你还是太年轻了，哈哈哈哈',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2026.02',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '42.jpg',
     content: '又回老家啦，跟送女儿上学一样，开开心心，今年过年都没好好休息，时间过得太快了，假期又短',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2026.03',
     phase: '誓言誓约',
     title: '宿命加冕 · 交换未来密钥',
-    photo: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=400&q=80',
+    photo: '43.jpg',
     content: '今年就是日常生活啦，照片也变少了，两个人都发福了，生活慢慢回归于平淡的生活，但是我对你的热爱永远不变，爱你哟，老婆',
-    depth: 110 // Z goes from 110 to 50
+    depth: 110 // Z 轴坐标范围自 110 到 50
   },
   {
     year: '2026.06',
     phase: '璀璨今朝',
     title: '璀璨周年 · 热爱永无边界',
-    photo: 'https://images.unsplash.com/photo-1531747118685-ca8fa6e08806?auto=format&fit=crop&w=400&q=80',
+    photo: '44.jpg',
     content: '老婆，祝你生日快乐！要天天开心哟，永远爱你的老公！',
-    depth: 50 // Z < 50
+    depth: 50 // Z 轴坐标小于 50
   }
 ];
 
