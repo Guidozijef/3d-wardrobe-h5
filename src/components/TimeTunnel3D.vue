@@ -47,13 +47,26 @@
           </span>
 
           <!-- Photo Window -->
-          <div class="relative w-full aspect-[16/10] sm:aspect-[4/3] rounded-lg overflow-hidden border border-white/10 mb-2 sm:mb-3 bg-neutral-900 group">
+          <div 
+            @click="openLightbox(card.photo)"
+            class="relative w-full rounded-lg overflow-hidden border border-white/10 mb-2 sm:mb-3 bg-neutral-950 group cursor-pointer flex items-center justify-center min-h-[150px] max-h-[280px] sm:max-h-[340px]"
+          >
+            <!-- 悬浮态磨砂提示框，引导用户点击查看长图/大图，增强交互体验 -->
+            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-20 backdrop-blur-[2px]">
+              <div class="px-3 py-1.5 rounded-lg bg-black/60 border border-white/20 flex items-center gap-1.5 shadow-lg scale-90 group-hover:scale-100 transition-transform duration-300">
+                <svg class="w-3.5 h-3.5 text-[#ff5e8c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m4-3H6" />
+                </svg>
+                <span class="text-[10px] text-white font-sans tracking-wider font-semibold">点击查看完整长图</span>
+              </div>
+            </div>
+
             <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none z-10"></div>
             
             <img 
               :src="getLocalImage(card.photo)" 
               alt="Memory Node Visual" 
-              class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 filter saturate-[1.1]" 
+              class="max-w-full max-h-[280px] sm:max-h-[340px] object-contain transition-transform duration-1000 group-hover:scale-103 filter saturate-[1.1] block" 
             />
             
             <!-- Corner decorations -->
@@ -127,6 +140,43 @@
         </button>
       </div>
 
+    </div>
+
+    <!-- 全屏灯箱模态框：支持滚动条垂直滑动，确保纵向长图能完整浏览 -->
+    <div 
+      v-if="isLightboxOpen" 
+      class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4 cursor-zoom-out pointer-events-auto"
+      @click="closeLightbox"
+      @wheel.stop.prevent
+    >
+      <!-- 右上角悬浮关闭按钮 -->
+      <button 
+        @click.stop="closeLightbox"
+        class="absolute top-6 right-6 text-white/70 hover:text-white p-2.5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 hover:scale-110 active:scale-95 transition-all cursor-pointer z-50 shadow-lg"
+        id="close_lightbox_btn"
+        aria-label="关闭预览"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- 滚动图片容器：提供 overflow-y-auto 属性以支持长图滚动 -->
+      <div 
+        class="w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-xl flex justify-center custom-scrollbar border border-white/10 bg-neutral-950/40 shadow-2xl p-1"
+        @click.stop
+      >
+        <img 
+          :src="getLocalImage(lightboxPhoto)" 
+          alt="Full Memory Node Visual Preview" 
+          class="w-auto h-auto max-w-full rounded-lg select-none shadow-2xl"
+        />
+      </div>
+
+      <!-- 底部操作引导提示 -->
+      <span class="text-[10px] text-gray-400 mt-6 tracking-widest uppercase animate-pulse select-none bg-black/40 px-3.5 py-1.5 rounded-full border border-white/5">
+        点击任意空白处或右上角关闭预览 // CLICK OUTSIDE TO CLOSE
+      </span>
     </div>
   </div>
 </template>
@@ -538,6 +588,30 @@ const isAnimating = ref(false);
 const activeCardIndex = computed(() => {
   return currentIndex.value;
 });
+
+// 全屏长图预览模态框控制状态，符合 Google 编码规范
+const isLightboxOpen = ref(false);
+const lightboxPhoto = ref('');
+
+/**
+ * 开启全屏大图预览模态框。
+ * 符合 Google 编码规范，利用中文进行详尽功能性注释。
+ *
+ * @param {string} photoName 待放大的图片文件名。
+ */
+function openLightbox(photoName: string): void {
+  lightboxPhoto.value = photoName;
+  isLightboxOpen.value = true;
+}
+
+/**
+ * 关闭全屏大图预览模态框。
+ * 符合 Google 编码规范，利用中文进行详尽功能性注释。
+ */
+function closeLightbox(): void {
+  isLightboxOpen.value = false;
+  lightboxPhoto.value = '';
+}
 
 // 音频上下文声明，用以支持网页音频程序化物理合成
 let audioCtx: AudioContext | null = null;
@@ -1142,5 +1216,21 @@ function playPageTurnSound(): void {
 /* Floating/Perspective transformations styling */
 .translate-y-0 {
   transform: translateY(0);
+}
+
+/* 自定义大图预览滚动条样式，深度契合黑金及霓虹粉整体视觉系统 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 94, 140, 0.4);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 94, 140, 0.7);
 }
 </style>
