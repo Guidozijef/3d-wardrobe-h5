@@ -110,7 +110,7 @@
         <!-- Warp Depth / Actions -->
         <div class="w-full flex justify-between items-center font-sans text-[10px] text-gray-400 mb-2">
           <span>相伴进度 // {{ Math.round(depthPercent) }}%</span>
-          <span>时光穿梭 // {{ Math.round(400 - cameraZOffset) }} 光年</span>
+          <span>时光穿梭 // {{ Math.round(startZ - cameraZOffset) }} 光年</span>
         </div>
 
         <!-- Full Transition button once reached end of tunnel -->
@@ -507,11 +507,21 @@ const timelineCards = [
   }
 ];
 
+// 交互深度与三维空间参数配置
+const startZ = 1800; // 穿梭起点深度坐标
+const endZ = 20;     // 穿梭终点深度坐标
+const totalDepthRange = startZ - endZ; // 总穿梭距离
+
+// 动态计算并平摊所有卡片的 Z 轴深度值，使其根据卡片数量完美均匀排布，防止重叠
+timelineCards.forEach((card, idx) => {
+  card.depth = startZ - (idx * (totalDepthRange / (timelineCards.length - 1 || 1)));
+});
+
 // Interactive depth states
-// Z ranges from 400 (start) down to 0 (end)
-const cameraZOffset = ref(400); 
+// Z ranges from startZ down to endZ
+const cameraZOffset = ref(startZ); 
 const depthPercent = computed(() => {
-  return Math.min(Math.max(((400 - cameraZOffset.value) / 380) * 100, 0), 100);
+  return Math.min(Math.max(((startZ - cameraZOffset.value) / totalDepthRange) * 100, 0), 100);
 });
 
 // 计算当前视窗（CameraZOffset）最贴近的卡片索引，用以作为卡片翻页边界触发判定
@@ -705,7 +715,8 @@ function initThree() {
   scene.fog = new THREE.FogExp2('#140411', 0.0035);
 
   // Camera settings
-  camera = new THREE.PerspectiveCamera(60, width / height, 1, 600);
+  // 增大远裁剪面到 1000 以看清更远的星空粒子
+  camera = new THREE.PerspectiveCamera(60, width / height, 1, 1000);
   camera.position.set(0, 0, cameraZOffset.value);
 
   // WebGL Renderer settings
@@ -722,7 +733,8 @@ function initThree() {
   for (let i = 0; i < starCount; i++) {
     const radius = 45 + Math.random() * 35; 
     const angle = Math.random() * Math.PI * 2;
-    const z = (Math.random() * 500) - 50; 
+    // 星空粒子分布在整个区间 [endZ - 100, startZ + 100]
+    const z = (Math.random() * (startZ + 200)) - 100; 
 
     starPositions[i * 3] = Math.cos(angle) * radius;
     starPositions[i * 3 + 1] = Math.sin(angle) * radius;
@@ -743,15 +755,19 @@ function initThree() {
   starsPoints = new THREE.Points(starsGeometry, starsMaterial);
   scene.add(starsPoints);
 
-  // 2. Generate Neon glowing rings matching card Z depths
+  // 2. 动态计算霓虹光圈的等距排布，自起点 startZ 平铺至终点 endZ
   neonGates = new THREE.Group();
   const ringGeom = new THREE.TorusGeometry(32, 0.3, 8, 32);
-  const gateDepths = [350, 290, 230, 170, 110, 50, 20];
-  const ringColors = ['#ff5e8c', '#ffd27a', '#c84095', '#ffe08a', '#ff5e8c', '#ffd27a', '#c84095'];
+  const gateCount = 10;
+  const gateDepths: number[] = [];
+  for (let i = 0; i < gateCount; i++) {
+    gateDepths.push(startZ - i * (totalDepthRange / (gateCount - 1)));
+  }
+  const ringColors = ['#ff5e8c', '#ffd27a', '#c84095', '#ffe08a'];
 
   gateDepths.forEach((zDepth, idx) => {
     const mat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(ringColors[idx]),
+      color: new THREE.Color(ringColors[idx % ringColors.length]),
       transparent: true,
       opacity: 0.6,
       wireframe: true
@@ -763,7 +779,7 @@ function initThree() {
     // Inner glowing ring lines
     const glowRingGeom = new THREE.TorusGeometry(32.4, 0.05, 4, 32);
     const glowRing = new THREE.Mesh(glowRingGeom, new THREE.MeshBasicMaterial({
-      color: new THREE.Color(ringColors[idx]),
+      color: new THREE.Color(ringColors[idx % ringColors.length]),
       transparent: true,
       opacity: 0.3
     }));
@@ -797,7 +813,12 @@ function initThree() {
     createNebulaTexture('rgba(200, 64, 149, 0.2)', 'rgba(71, 163, 255, 0.06)')
   ];
   
-  const nebulaZCoords = [360, 290, 220, 150, 80];
+  // 动态等距排布星云深度
+  const nebulaCount = 6;
+  const nebulaZCoords: number[] = [];
+  for (let i = 0; i < nebulaCount; i++) {
+    nebulaZCoords.push(startZ - i * (totalDepthRange / (nebulaCount - 1)));
+  }
   nebulaZCoords.forEach((zVal, idx) => {
     const mat = new THREE.MeshBasicMaterial({
       map: textures[idx % textures.length],
@@ -926,8 +947,9 @@ function onTouchMove(e: TouchEvent) {
   if (!isDragging) return;
   currentY = e.touches[0].clientY;
   const deltaY = currentY - startY;
-  const targetZ = baseZ + deltaY * 0.78;
-  cameraZOffset.value = Math.min(Math.max(targetZ, 20), 400);
+  // 保持舒适的拖动灵敏度与全局起点终点截断限制
+  const targetZ = baseZ + deltaY * 0.90;
+  cameraZOffset.value = Math.min(Math.max(targetZ, endZ), startZ);
 
   spawnTrailAt(e.touches[0].clientX, e.touches[0].clientY);
 }
@@ -943,8 +965,9 @@ function onMouseMove(e: MouseEvent) {
   if (!isDragging) return;
   currentY = e.clientY;
   const deltaY = currentY - startY;
-  const targetZ = baseZ + deltaY * 1.05;
-  cameraZOffset.value = Math.min(Math.max(targetZ, 20), 400);
+  // 保持舒适的拖动灵敏度与全局起点终点截断限制
+  const targetZ = baseZ + deltaY * 1.20;
+  cameraZOffset.value = Math.min(Math.max(targetZ, endZ), startZ);
 
   spawnTrailAt(e.clientX, e.clientY);
 }
