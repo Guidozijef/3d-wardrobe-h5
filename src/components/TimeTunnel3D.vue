@@ -19,7 +19,7 @@
       <div class="relative w-full flex-grow flex items-center justify-center my-4 overflow-visible">
         <div v-for="(card, index) in timelineCards" :key="index" class="absolute w-full max-w-[285px] sm:max-w-[310px] p-3 sm:p-4 rounded-2xl bg-[#140411]/95 border border-[#ff5e8c]/30 shadow-[0_0_35px_rgba(255,94,140,0.18)] transition-all duration-700 ease-out flex flex-col items-center pointer-events-auto select-none" :class="[getCardClass(index)]">
           <!-- Elegant Badge -->
-          <span class="px-2.5 py-0.5 rounded-full text-[9px] font-sans font-bold tracking-widest bg-[#ff5e8c]/15 text-[#ff5e8c] border border-[#ff5e8c]/30 mb-2 sm:mb-3">💌 {{ card.year }} // {{ card.phase }}</span>
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-sans font-bold tracking-widest bg-[#ff5e8c]/15 text-[#ff5e8c] border border-[#ff5e8c]/30 mb-2 sm:mb-3">💌 {{ card.year }} // {{ card.phase }}</span>
 
           <!-- Photo Window -->
           <!-- 关键修复：移除 bg-neutral-950 以防止图片未加载时显示为纯黑框 -->
@@ -50,7 +50,7 @@
           </div>
 
           <!-- Memory Title -->
-          <h3 class="text-sm sm:text-base font-bold text-white mb-1.5 sm:mb-2 tracking-wide text-center">
+          <h3 class="text-base sm:text-lg font-bold text-white mb-1.5 sm:mb-2 tracking-wide text-center">
             {{ card.title }}
           </h3>
 
@@ -58,12 +58,12 @@
           <div class="w-12 h-0.5 bg-[#ffd27a]/60 rounded-full mb-1.5 sm:mb-2"></div>
 
           <!-- Memory Content -->
-          <p class="text-[10px] sm:text-[11px] text-gray-300 leading-relaxed font-sans text-left px-1">
+          <p class="text-[12px] sm:text-[13px] text-gray-300 leading-relaxed font-sans text-left px-1">
             {{ card.content }}
           </p>
 
           <!-- Details index helper -->
-          <div class="mt-2.5 flex justify-between w-full font-sans text-[8px] text-[#ffd27a]/80 tracking-widest uppercase border-t border-white/5 pt-2">
+          <div class="mt-2.5 flex justify-between w-full font-sans text-[9px] text-[#ffd27a]/80 tracking-widest uppercase border-t border-white/5 pt-2">
             <span>STATION 0{{ index + 1 }}</span>
             <span>❤ ALWAYS TOGETHER</span>
           </div>
