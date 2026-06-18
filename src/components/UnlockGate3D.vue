@@ -130,7 +130,7 @@
         class="absolute inset-x-4 top-1/2 -translate-y-1/2 p-6 rounded-3xl bg-[#140411]/90 border border-[#ff5e8c]/30 backdrop-blur-lg opacity-0 pointer-events-none transition-all duration-1000 scale-90 flex flex-col items-center justify-center text-center shadow-[0_10px_40px_rgba(255,94,140,0.15)]"
       >
         <span class="font-serif italic text-xs text-[#ffd27a] tracking-[0.2em] mb-2 block">Warmest Blessings // 给你最甜的祝福</span>
-        <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-[#ff5e8c] to-[#ffd27a] tracking-widest leading-normal">
+        <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-[#ff5e8c] to-[#ffd27a] tracking-widest leading-normal whitespace-nowrap">
           老婆，生日快乐！
         </h1>
         <p class="text-xs text-gray-200 mt-4 leading-relaxed font-sans max-w-xs px-2">
