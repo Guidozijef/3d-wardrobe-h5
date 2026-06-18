@@ -1,6 +1,7 @@
 <template>
   <div 
-    class="relative w-full h-full overflow-hidden bg-[#140411] flex flex-col items-center justify-between p-4 hologram-grid"
+    class="relative w-full h-full overflow-hidden bg-[#140411] flex flex-col items-center justify-between p-4 hologram-grid touch-none"
+    style="touch-action: none; overscroll-behavior: contain;"
     @touchstart="onTouchStart"
     @touchmove="onTouchMove"
     @touchend="onTouchEnd"
@@ -38,7 +39,7 @@
         <div 
           v-for="(card, index) in timelineCards" 
           :key="card.year"
-          class="absolute w-full max-w-[285px] sm:max-w-[310px] p-3 sm:p-4 rounded-2xl bg-black/85 border border-[#ff5e8c]/30 backdrop-blur-lg shadow-[0_0_35px_rgba(255,94,140,0.18)] transition-all duration-700 ease-out flex flex-col items-center pointer-events-auto select-none"
+          class="absolute w-full max-w-[285px] sm:max-w-[310px] p-3 sm:p-4 rounded-2xl bg-[#140411]/95 border border-[#ff5e8c]/30 shadow-[0_0_35px_rgba(255,94,140,0.18)] transition-all duration-700 ease-out flex flex-col items-center pointer-events-auto select-none"
           :class="[getCardClass(index)]"
         >
           <!-- Elegant Badge -->
@@ -163,7 +164,8 @@
 
       <!-- 滚动图片容器：提供 overflow-y-auto 属性以支持长图滚动 -->
       <div 
-        class="w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-xl flex justify-center custom-scrollbar border border-white/10 bg-neutral-950/40 shadow-2xl p-1"
+        class="w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-xl flex justify-center custom-scrollbar border border-white/10 bg-neutral-950/40 shadow-2xl p-1 touch-pan-y"
+        style="touch-action: pan-y;"
         @click.stop
       >
         <img 
@@ -997,6 +999,14 @@ function animate() {
 
 // Cards styling & visibility states based on camera depth index
 function getCardClass(index: number) {
+  // 关键性能优化：如果该卡片不是当前活跃卡片，也不是前后相邻的卡片，
+  // 则直接返回 'hidden' 将其在 DOM 树中隐藏（display: none）。
+  // 这样做能让移动端浏览器的复合管理器（Compositor）免于在 WebGL 画布上方堆叠并混合计算数十个带有
+  // 高对比度阴影和滤镜的透明卡片图层，从而彻底消除移动端常见的渲染黑影、闪烁、照片遮挡等 GPU 缺陷。
+  if (Math.abs(index - currentIndex.value) > 1) {
+    return 'hidden';
+  }
+
   const card = timelineCards[index];
   const distance = Math.abs(cameraZOffset.value - card.depth);
 
