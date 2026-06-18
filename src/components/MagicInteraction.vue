@@ -1,22 +1,13 @@
 <template>
-  <div 
-    class="relative w-full h-full overflow-hidden bg-[#140411] flex flex-col items-center justify-between p-4 hologram-grid"
-    @touchmove="onTouchMove"
-    @mousemove="onMouseMove"
-    @touchstart="onTouchStart"
-    @mousedown="onMouseDown"
-  >
+  <div class="relative w-full h-full overflow-hidden bg-[#140411] flex flex-col items-center justify-between p-4 hologram-grid" @touchmove="onTouchMove" @mousemove="onMouseMove" @touchstart="onTouchStart" @mousedown="onMouseDown">
     <!-- WebGL 全屏画布 -->
     <div ref="canvasContainer" class="absolute inset-0 w-full h-full z-0 cursor-crosshair"></div>
 
     <!-- 交互层 UI -->
     <div class="relative z-10 w-full max-w-md mx-auto flex flex-col items-center justify-between h-full pointer-events-none">
-      
       <!-- 顶部状态指示栏 -->
       <div class="w-full text-center mt-6 py-2.5 border-b border-[#ff5e8c]/20 bg-black/60 backdrop-blur-md px-4 rounded-b-xl shadow-[0_4px_15px_rgba(255,94,140,0.05)]">
-        <div class="font-serif italic text-xs text-[#ffd27a] tracking-[0.1em] mb-0.5">
-          Constellation Connection // 魔法星心连线
-        </div>
+        <div class="font-serif italic text-xs text-[#ffd27a] tracking-[0.1em] mb-0.5">Constellation Connection // 魔法星心连线</div>
         <h2 class="text-sm font-bold text-white tracking-wide flex items-center justify-center gap-1.5">
           <span>✨ 顺次连接星空中的 6 颗星点</span>
           <span class="text-[#ffd27a]">({{ nextNodeIndex }}/6)</span>
@@ -24,19 +15,14 @@
       </div>
 
       <!-- 全息情话信封弹窗 (完成连线后触发) -->
-      <div 
-        v-if="showLetter"
-        class="w-full p-6 my-auto rounded-3xl bg-black/85 border border-[#ff5e8c]/40 backdrop-blur-xl shadow-[0_0_40px_rgba(255,94,140,0.25)] flex flex-col items-center justify-center text-center pointer-events-auto transform transition-all duration-500 scale-100"
-      >
+      <div v-if="showLetter" class="w-full p-6 my-auto rounded-3xl bg-black/85 border border-[#ff5e8c]/40 backdrop-blur-xl shadow-[0_0_40px_rgba(255,94,140,0.25)] flex flex-col items-center justify-center text-center pointer-events-auto transform transition-all duration-500 scale-100">
         <!-- 标签装饰 -->
-        <span class="px-3 py-1 rounded bg-[#ff5e8c]/15 text-[#ff5e8c] font-sans text-[10px] tracking-widest border border-[#ff5e8c]/30 mb-4 animate-pulse uppercase">
-          Endless Blessings // 甜蜜星语
-        </span>
+        <span class="px-3 py-1 rounded bg-[#ff5e8c]/15 text-[#ff5e8c] font-sans text-[10px] tracking-widest border border-[#ff5e8c]/30 mb-4 animate-pulse uppercase">Endless Blessings // 甜蜜星语</span>
 
         <!-- 祝福语显示框 -->
         <div class="relative w-full py-4 px-2 min-h-[100px] flex items-center justify-center">
           <p class="text-[13px] text-gray-200 leading-relaxed font-sans text-left border-l-2 border-[#ffd27a] pl-3">
-            {{ isGenerating ? '正在穿越繁星编译温热的心愿祝福...' : textContent }}
+            {{ isGenerating ? "正在穿越繁星编译温热的心愿祝福..." : textContent }}
           </p>
         </div>
 
@@ -48,21 +34,8 @@
 
         <!-- 交互按钮 -->
         <div class="w-full flex gap-3">
-          <button 
-            @click="triggerVibeWish"
-            class="flex-1 py-2 rounded-xl text-xs font-bold bg-[#ff5e8c]/15 border border-[#ff5e8c]/40 hover:bg-[#ff5e8c]/35 text-white tracking-wider cursor-pointer font-sans"
-            style="transition: all 0.3s;"
-            id="regenerate_btn"
-          >
-            再来一次 💫
-          </button>
-          <button 
-            @click="closeLetterModal"
-            class="px-5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-gray-300 tracking-wider cursor-pointer font-sans"
-            id="close_letter_btn"
-          >
-            收起
-          </button>
+          <button @click="triggerVibeWish" class="flex-1 py-2 rounded-xl text-xs font-bold bg-[#ff5e8c]/15 border border-[#ff5e8c]/40 hover:bg-[#ff5e8c]/35 text-white tracking-wider cursor-pointer font-sans" style="transition: all 0.3s" id="regenerate_btn">再来一次 💫</button>
+          <button @click="closeLetterModal" class="px-5 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-gray-300 tracking-wider cursor-pointer font-sans" id="close_letter_btn">收起</button>
         </div>
       </div>
 
@@ -70,21 +43,9 @@
       <div class="w-full flex flex-col items-center gap-3 sm:gap-4 mb-2 sm:mb-6 mt-auto pointer-events-auto">
         <!-- 氛围选择面板 -->
         <div class="w-full bg-black/75 backdrop-blur-md p-3 sm:p-4 rounded-2xl border border-[#ff5e8c]/20 shadow-[0_0_30px_rgba(255,94,140,0.1)]">
-          <div class="font-serif italic text-[10px] sm:text-xs text-[#ffd27a] tracking-widest mb-2 sm:mb-3 text-center">
-            Select Romantic Atmosphere // 选择心愿氛围
-          </div>
+          <div class="font-serif italic text-[10px] sm:text-xs text-[#ffd27a] tracking-widest mb-2 sm:mb-3 text-center">Select Romantic Atmosphere // 选择心愿氛围</div>
           <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
-            <button 
-              v-for="vibe in vibes" 
-              :key="vibe.id"
-              @click="changeVibe(vibe.id)"
-              class="py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-[11px] font-bold border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 sm:gap-1.5"
-              :class="[
-                currentVibe === vibe.id 
-                  ? 'bg-[#ff5e8c]/25 border-[#ff5e8c] text-white shadow-[0_0_15px_rgba(255,94,140,0.3)]' 
-                  : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
-              ]"
-            >
+            <button v-for="vibe in vibes" :key="vibe.id" @click="changeVibe(vibe.id)" class="py-2 sm:py-2.5 rounded-xl text-[10px] sm:text-[11px] font-bold border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 sm:gap-1.5" :class="[currentVibe === vibe.id ? 'bg-[#ff5e8c]/25 border-[#ff5e8c] text-white shadow-[0_0_15px_rgba(255,94,140,0.3)]' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10']">
               <span class="text-sm">{{ vibe.icon }}</span>
               <span>{{ vibe.name }}</span>
             </button>
@@ -92,53 +53,46 @@
         </div>
 
         <!-- 连线完成后才亮起的渐变按钮，提示跳转 -->
-        <button
-          @click="emit('next')" 
-          class="w-full py-3.5 rounded-xl border font-bold tracking-[0.1em] text-xs uppercase cursor-pointer transform hover:scale-102 transition-all text-center flex items-center justify-center gap-2"
-          :class="[
-            nextNodeIndex >= 6
-              ? 'border-[#ff5e8c] bg-gradient-to-r from-[#ff5e8c] to-[#c84095] text-white shadow-[0_4px_25px_rgba(255,94,140,0.4)] animate-pulse'
-              : 'border-white/10 bg-neutral-900/50 text-gray-500 shadow-none'
-          ]"
-          id="skip_to_voucher_btn"
-        >
-          <span>{{ nextNodeIndex >= 6 ? '前往专属生日愿望兑换券 ➔' : '🔒 连线星空以解锁下一步' }}</span>
+        <button @click="emit('next')" class="w-full py-3.5 rounded-xl border font-bold tracking-[0.1em] text-xs uppercase cursor-pointer transform hover:scale-102 transition-all text-center flex items-center justify-center gap-2" :class="[nextNodeIndex >= 6 ? 'border-[#ff5e8c] bg-gradient-to-r from-[#ff5e8c] to-[#c84095] text-white shadow-[0_4px_25px_rgba(255,94,140,0.4)] animate-pulse' : 'border-white/10 bg-neutral-900/50 text-gray-500 shadow-none']" id="skip_to_voucher_btn">
+          <span>{{ nextNodeIndex >= 6 ? "前往专属生日愿望兑换券 ➔" : "🔒 连线星空以解锁下一步" }}</span>
         </button>
       </div>
-
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
-import * as THREE from 'three';
-import { gsap } from 'gsap';
+import { ref, onMounted, onUnmounted, watch } from "vue";
+import * as THREE from "three";
+import { gsap } from "gsap";
 
 // 声明外部 Props，支持接收衣橱选择的礼服主题
-const props = withDefaults(defineProps<{
-  selectedTheme?: 'pink' | 'blue' | 'gold';
-}>(), {
-  selectedTheme: 'pink'
-});
+const props = withDefaults(
+  defineProps<{
+    selectedTheme?: "pink" | "blue" | "gold";
+  }>(),
+  {
+    selectedTheme: "pink",
+  },
+);
 
 const emit = defineEmits<{
-  (e: 'next'): void;
-  (e: 'select-theme', themeId: 'pink' | 'blue' | 'gold'): void;
+  (e: "next"): void;
+  (e: "select-theme", themeId: "pink" | "blue" | "gold"): void;
 }>();
 
 // 氛围配制
 const vibes = [
-  { id: 'cyberpunk', name: '温馨午后', icon: '☕' },
-  { id: 'starry', name: '星空浪漫', icon: '🌌' },
-  { id: 'sweet', name: '甜美粉樱', icon: '🌸' }
+  { id: "cyberpunk", name: "温馨午后", icon: "☕" },
+  { id: "starry", name: "星空浪漫", icon: "🌌" },
+  { id: "sweet", name: "甜美粉樱", icon: "🌸" },
 ];
 
-const currentVibe = ref('sweet');
+const currentVibe = ref("sweet");
 const showLetter = ref(false);
 const isGenerating = ref(false);
-const textContent = ref('');
-const letterSource = ref('Local Hub');
+const textContent = ref("");
+const letterSource = ref("Local Hub");
 
 // 连线游戏的核心追踪数据
 const nextNodeIndex = ref(0);
@@ -150,11 +104,11 @@ let activePointerLine: THREE.Line | null = null;
 // 6个连线星点的 3D 坐标分布，构成心形
 const starNodes = [
   { x: -25, y: 15, z: 0, active: false, frequency: 261.63 }, // C4 - 左上叶
-  { x: 0, y: 5, z: 0, active: false, frequency: 293.66 },   // D4 - 中间凹陷
-  { x: 25, y: 15, z: 0, active: false, frequency: 329.63 },  // E4 - 右上叶
-  { x: 28, y: -12, z: 0, active: false, frequency: 392.00 }, // G4 - 右下沿
-  { x: 0, y: -32, z: 0, active: false, frequency: 440.00 },  // A4 - 底部尖端
-  { x: -28, y: -12, z: 0, active: false, frequency: 523.25 } // C5 - 左下沿
+  { x: 0, y: 5, z: 0, active: false, frequency: 293.66 }, // D4 - 中间凹陷
+  { x: 25, y: 15, z: 0, active: false, frequency: 329.63 }, // E4 - 右上叶
+  { x: 28, y: -12, z: 0, active: false, frequency: 392.0 }, // G4 - 右下沿
+  { x: 0, y: -32, z: 0, active: false, frequency: 440.0 }, // A4 - 底部尖端
+  { x: -28, y: -12, z: 0, active: false, frequency: 523.25 }, // C5 - 左下沿
 ];
 
 // Three.js 变量 (不使用 ref 以免引起频繁代理开销)
@@ -202,7 +156,7 @@ const activeHearts: HeartInstance[] = [];
  * 1. 采用驼峰式命名。
  * 2. 具有明确的类型注解。
  * 3. 包含详尽的中文业务及实现说明。
- * 
+ *
  * @returns {{
  *   particleColor: string;
  *   lineColor: string;
@@ -217,29 +171,29 @@ function getThemeColors(): {
   nodeActive: number;
 } {
   // 从 Props 中提取当前选中的主题，如不存在则默认降级为粉色主题
-  const theme = props.selectedTheme || 'pink';
-  
-  if (theme === 'blue') {
+  const theme = props.selectedTheme || "pink";
+
+  if (theme === "blue") {
     return {
-      particleColor: '#60e0ff', // 浅蓝色高亮粒子
-      lineColor: '#47a3ff',     // 主题星轨线条颜色
-      nodeBase: 0x1c355e,       // 幽蓝暗沉背景星点色
-      nodeActive: 0x47a3ff      // 亮蓝色激活星点色
+      particleColor: "#60e0ff", // 浅蓝色高亮粒子
+      lineColor: "#47a3ff", // 主题星轨线条颜色
+      nodeBase: 0x1c355e, // 幽蓝暗沉背景星点色
+      nodeActive: 0x47a3ff, // 亮蓝色激活星点色
     };
-  } else if (theme === 'gold') {
+  } else if (theme === "gold") {
     return {
-      particleColor: '#ffebaf', // 晨曦淡金色粒子
-      lineColor: '#ffd27a',     // 温暖阳光金星轨线条色
-      nodeBase: 0x543b17,       // 棕褐暗沉背景星点色
-      nodeActive: 0xffd27a      // 橙金高亮激活星点色
+      particleColor: "#ffebaf", // 晨曦淡金色粒子
+      lineColor: "#ffd27a", // 温暖阳光金星轨线条色
+      nodeBase: 0x543b17, // 棕褐暗沉背景星点色
+      nodeActive: 0xffd27a, // 橙金高亮激活星点色
     };
   } else {
     // 默认返回 pink (樱粉物语) 配色方案
     return {
-      particleColor: '#ff69b4', // 浪漫樱粉粒子色
-      lineColor: '#ff5e8c',     // 玫粉星轨线条色
-      nodeBase: 0x5c1b34,       // 深紫粉暗沉背景星点色
-      nodeActive: 0xff5e8c      // 霓虹粉高亮激活星点色
+      particleColor: "#ff69b4", // 浪漫樱粉粒子色
+      lineColor: "#ff5e8c", // 玫粉星轨线条色
+      nodeBase: 0x5c1b34, // 深紫粉暗沉背景星点色
+      nodeActive: 0xff5e8c, // 霓虹粉高亮激活星点色
     };
   }
 }
@@ -263,88 +217,91 @@ function handleResize(): void {
 }
 
 // 监听外部传入的主题变动，动态重设 3D 渲染器中材质颜色，实现全场景无刷新色彩热更新
-watch(() => props.selectedTheme, (newTheme) => {
-  const colors = getThemeColors();
+watch(
+  () => props.selectedTheme,
+  (newTheme) => {
+    const colors = getThemeColors();
 
-  // 1. 动态更新背景星尘材质颜色
-  if (backgroundPoints && backgroundPoints.material) {
-    const mat = backgroundPoints.material as THREE.PointsMaterial;
-    gsap.to(mat.color, {
-      r: new THREE.Color(colors.lineColor).r,
-      g: new THREE.Color(colors.lineColor).g,
-      b: new THREE.Color(colors.lineColor).b,
-      duration: 0.6,
-      ease: 'power2.out'
-    });
-  }
-
-  // 2. 动态更新引导底衬线圈材质颜色
-  if (guideLine && guideLine.material) {
-    const mat = guideLine.material as THREE.LineBasicMaterial;
-    gsap.to(mat.color, {
-      r: new THREE.Color(colors.lineColor).r,
-      g: new THREE.Color(colors.lineColor).g,
-      b: new THREE.Color(colors.lineColor).b,
-      duration: 0.6,
-      ease: 'power2.out'
-    });
-  }
-
-  // 3. 动态更新拉丝画线段材质颜色
-  if (activePointerLine && activePointerLine.material) {
-    const mat = activePointerLine.material as THREE.LineBasicMaterial;
-    gsap.to(mat.color, {
-      r: new THREE.Color(colors.lineColor).r,
-      g: new THREE.Color(colors.lineColor).g,
-      b: new THREE.Color(colors.lineColor).b,
-      duration: 0.6,
-      ease: 'power2.out'
-    });
-  }
-
-  // 4. 动态更新共享的爱心粒子材质颜色
-  if (heartMaterial) {
-    gsap.to(heartMaterial.color, {
-      r: new THREE.Color(colors.particleColor).r,
-      g: new THREE.Color(colors.particleColor).g,
-      b: new THREE.Color(colors.particleColor).b,
-      duration: 0.6,
-      ease: 'power2.out'
-    });
-  }
-
-  // 5. 动态更新已生成的连线段颜色
-  connectedLines.forEach((line) => {
-    if (line.material) {
-      const mat = line.material as THREE.LineBasicMaterial;
+    // 1. 动态更新背景星尘材质颜色
+    if (backgroundPoints && backgroundPoints.material) {
+      const mat = backgroundPoints.material as THREE.PointsMaterial;
       gsap.to(mat.color, {
         r: new THREE.Color(colors.lineColor).r,
         g: new THREE.Color(colors.lineColor).g,
         b: new THREE.Color(colors.lineColor).b,
         duration: 0.6,
-        ease: 'power2.out'
+        ease: "power2.out",
       });
     }
-  });
-});
+
+    // 2. 动态更新引导底衬线圈材质颜色
+    if (guideLine && guideLine.material) {
+      const mat = guideLine.material as THREE.LineBasicMaterial;
+      gsap.to(mat.color, {
+        r: new THREE.Color(colors.lineColor).r,
+        g: new THREE.Color(colors.lineColor).g,
+        b: new THREE.Color(colors.lineColor).b,
+        duration: 0.6,
+        ease: "power2.out",
+      });
+    }
+
+    // 3. 动态更新拉丝画线段材质颜色
+    if (activePointerLine && activePointerLine.material) {
+      const mat = activePointerLine.material as THREE.LineBasicMaterial;
+      gsap.to(mat.color, {
+        r: new THREE.Color(colors.lineColor).r,
+        g: new THREE.Color(colors.lineColor).g,
+        b: new THREE.Color(colors.lineColor).b,
+        duration: 0.6,
+        ease: "power2.out",
+      });
+    }
+
+    // 4. 动态更新共享的爱心粒子材质颜色
+    if (heartMaterial) {
+      gsap.to(heartMaterial.color, {
+        r: new THREE.Color(colors.particleColor).r,
+        g: new THREE.Color(colors.particleColor).g,
+        b: new THREE.Color(colors.particleColor).b,
+        duration: 0.6,
+        ease: "power2.out",
+      });
+    }
+
+    // 5. 动态更新已生成的连线段颜色
+    connectedLines.forEach((line) => {
+      if (line.material) {
+        const mat = line.material as THREE.LineBasicMaterial;
+        gsap.to(mat.color, {
+          r: new THREE.Color(colors.lineColor).r,
+          g: new THREE.Color(colors.lineColor).g,
+          b: new THREE.Color(colors.lineColor).b,
+          duration: 0.6,
+          ease: "power2.out",
+        });
+      }
+    });
+  },
+);
 
 onMounted(() => {
   // 依据传入的主题初始化选中氛围状态
-  const initialTheme = props.selectedTheme || 'pink';
-  if (initialTheme === 'blue') {
-    currentVibe.value = 'starry';
-  } else if (initialTheme === 'gold') {
-    currentVibe.value = 'cyberpunk';
+  const initialTheme = props.selectedTheme || "pink";
+  if (initialTheme === "blue") {
+    currentVibe.value = "starry";
+  } else if (initialTheme === "gold") {
+    currentVibe.value = "cyberpunk";
   } else {
-    currentVibe.value = 'sweet';
+    currentVibe.value = "sweet";
   }
 
   initThree();
-  window.addEventListener('resize', handleResize);
+  window.addEventListener("resize", handleResize);
 });
 
 onUnmounted(() => {
-  window.removeEventListener('resize', handleResize);
+  window.removeEventListener("resize", handleResize);
   cancelAnimationFrame(animationFrameId);
 
   // 清理爱心粒子
@@ -382,7 +339,7 @@ onUnmounted(() => {
 
   if (heartGeometry) heartGeometry.dispose();
   if (heartMaterial) heartMaterial.dispose();
-  
+
   if (renderer) {
     renderer.dispose();
     renderer.forceContextLoss();
@@ -407,7 +364,7 @@ function initThree() {
 
   // 场景设置
   scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2('#140411', 0.005);
+  scene.fog = new THREE.FogExp2("#140411", 0.005);
 
   // 相机设置
   camera = new THREE.PerspectiveCamera(55, width / height, 1, 300);
@@ -431,7 +388,7 @@ function initThree() {
   shape.bezierCurveTo(0.45, 0.85, 0, 0.45, 0, 0.5);
 
   heartGeometry = new THREE.ShapeGeometry(shape);
-  
+
   const colors = getThemeColors();
 
   // 霓虹发光粒子材质
@@ -440,7 +397,7 @@ function initThree() {
     side: THREE.DoubleSide,
     transparent: true,
     opacity: 0.8,
-    blending: THREE.AdditiveBlending
+    blending: THREE.AdditiveBlending,
   });
 
   // 2. 添加背景漫天星尘
@@ -452,12 +409,12 @@ function initThree() {
     ambientPositions[i * 3 + 1] = (Math.random() - 0.5) * 200;
     ambientPositions[i * 3 + 2] = (Math.random() - 0.5) * 150;
   }
-  ambientGeom.setAttribute('position', new THREE.BufferAttribute(ambientPositions, 3));
+  ambientGeom.setAttribute("position", new THREE.BufferAttribute(ambientPositions, 3));
   const ambientMat = new THREE.PointsMaterial({
     color: colors.lineColor,
     size: 0.8,
     transparent: true,
-    opacity: 0.35
+    opacity: 0.35,
   });
   backgroundPoints = new THREE.Points(ambientGeom, ambientMat);
   scene.add(backgroundPoints);
@@ -469,7 +426,7 @@ function initThree() {
     const starMat = new THREE.MeshBasicMaterial({
       color: colors.nodeBase,
       transparent: true,
-      opacity: 0.65
+      opacity: 0.65,
     });
     const mesh = new THREE.Mesh(starGeom, starMat);
     mesh.position.set(node.x, node.y, node.z);
@@ -486,21 +443,18 @@ function initThree() {
   const guideMat = new THREE.LineBasicMaterial({
     color: colors.lineColor,
     transparent: true,
-    opacity: 0.15 // 极淡的底衬虚线引导
+    opacity: 0.15, // 极淡的底衬虚线引导
   });
   guideLine = new THREE.LineLoop(guideGeom, guideMat);
   scene.add(guideLine);
 
   // 5. 初始化拉丝动态连线 Segment
-  const activePointerGeom = new THREE.BufferGeometry().setFromPoints([
-    new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(0, 0, 0)
-  ]);
+  const activePointerGeom = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0)]);
   const activePointerMat = new THREE.LineBasicMaterial({
     color: colors.lineColor,
     transparent: true,
     opacity: 0,
-    blending: THREE.AdditiveBlending
+    blending: THREE.AdditiveBlending,
   });
   activePointerLine = new THREE.Line(activePointerGeom, activePointerMat);
   // 禁用视锥体裁剪，防止鼠标移动画线时因包围球半径为0导致线段被意外剔除不进行渲染
@@ -550,7 +504,7 @@ function animate() {
   // 2. 处理处于生命周期中的爱心粒子
   for (let i = activeHearts.length - 1; i >= 0; i--) {
     const heart = activeHearts[i];
-    
+
     // 物理移动
     heart.mesh.position.x += heart.vx;
     heart.mesh.position.y += heart.vy;
@@ -565,7 +519,7 @@ function animate() {
 
     // 衰老计算
     heart.life -= 0.015;
-    
+
     if (heart.life <= 0) {
       scene.remove(heart.mesh);
       activeHearts.splice(i, 1);
@@ -606,12 +560,12 @@ function onMouseMove(e: MouseEvent) {
 }
 
 // 释放鼠标/手指后判定暂停连线，隐藏画线拉丝
-window.addEventListener('mouseup', () => { 
-  isPressing = false; 
+window.addEventListener("mouseup", () => {
+  isPressing = false;
   if (activePointerLine) (activePointerLine.material as THREE.LineBasicMaterial).opacity = 0;
 });
-window.addEventListener('touchend', () => { 
-  isPressing = false; 
+window.addEventListener("touchend", () => {
+  isPressing = false;
   if (activePointerLine) (activePointerLine.material as THREE.LineBasicMaterial).opacity = 0;
 });
 
@@ -693,10 +647,10 @@ function activateNode(index: number) {
   if (nextNodeIndex.value === 6) {
     // 完成连线闭环：绘制最终星点 5 回连到星点 0 的闭合线段
     drawGlowingLine(starNodes[5], starNodes[0]);
-    
+
     // 隐藏拉丝线
     if (activePointerLine) (activePointerLine.material as THREE.LineBasicMaterial).opacity = 0;
-    
+
     // 延迟 600ms 自动弹出精美心愿卡片并爆发大烟花喷泉
     setTimeout(() => {
       triggerVibeWish();
@@ -711,7 +665,7 @@ function playCrystalChime(freq: number) {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
   }
-  if (audioCtx.state === 'suspended') {
+  if (audioCtx.state === "suspended") {
     audioCtx.resume();
   }
 
@@ -719,10 +673,10 @@ function playCrystalChime(freq: number) {
   const oscHarmonic = audioCtx.createOscillator(); // 泛音
   const gainNode = audioCtx.createGain();
 
-  osc.type = 'sine'; // 正弦波纯净感
+  osc.type = "sine"; // 正弦波纯净感
   osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
 
-  oscHarmonic.type = 'sine';
+  oscHarmonic.type = "sine";
   oscHarmonic.frequency.setValueAtTime(freq * 2, audioCtx.currentTime); // 谐振
 
   // 包络线：快速起音，长余震衰减
@@ -736,7 +690,7 @@ function playCrystalChime(freq: number) {
 
   osc.start();
   oscHarmonic.start();
-  
+
   osc.stop(audioCtx.currentTime + 1.0);
   oscHarmonic.stop(audioCtx.currentTime + 1.0);
 }
@@ -744,19 +698,16 @@ function playCrystalChime(freq: number) {
 /**
  * 在 3D 空间两个坐标点之间画一条粗实的、带有发光饱和度的主题颜色连线段
  */
-function drawGlowingLine(nodeA: { x: number, y: number, z: number }, nodeB: { x: number, y: number, z: number }) {
+function drawGlowingLine(nodeA: { x: number; y: number; z: number }, nodeB: { x: number; y: number; z: number }) {
   const colors = getThemeColors();
-  const points = [
-    new THREE.Vector3(nodeA.x, nodeA.y, nodeA.z),
-    new THREE.Vector3(nodeB.x, nodeB.y, nodeB.z)
-  ];
+  const points = [new THREE.Vector3(nodeA.x, nodeA.y, nodeA.z), new THREE.Vector3(nodeB.x, nodeB.y, nodeB.z)];
   const lineGeom = new THREE.BufferGeometry().setFromPoints(points);
-  
+
   const lineMat = new THREE.LineBasicMaterial({
     color: colors.lineColor,
     transparent: true,
     opacity: 0.95,
-    blending: THREE.AdditiveBlending
+    blending: THREE.AdditiveBlending,
   });
   const line = new THREE.Line(lineGeom, lineMat);
   scene.add(line);
@@ -775,16 +726,12 @@ function spawnHeartsAtPosition(cx: number, cy: number, count = 1) {
       side: THREE.DoubleSide,
       transparent: true,
       opacity: 0.85,
-      blending: THREE.AdditiveBlending
+      blending: THREE.AdditiveBlending,
     });
 
     const mesh = new THREE.Mesh(heartGeometry, mat);
-    mesh.position.set(
-      cx + (Math.random() - 0.5) * 4, 
-      cy + (Math.random() - 0.5) * 4, 
-      (Math.random() - 0.5) * 6
-    );
-    
+    mesh.position.set(cx + (Math.random() - 0.5) * 4, cy + (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 6);
+
     const sizeMod = 1.0 + Math.random() * 2.2;
     mesh.scale.set(sizeMod, sizeMod, sizeMod);
     scene.add(mesh);
@@ -798,7 +745,7 @@ function spawnHeartsAtPosition(cx: number, cy: number, count = 1) {
       maxScale: sizeMod,
       rotSpeedX: (Math.random() - 0.5) * 0.05,
       rotSpeedY: (Math.random() - 0.5) * 0.06,
-      rotSpeedZ: (Math.random() - 0.5) * 0.08
+      rotSpeedZ: (Math.random() - 0.5) * 0.08,
     });
   }
 }
@@ -817,7 +764,7 @@ function triggerCelebrationFountain() {
       side: THREE.DoubleSide,
       transparent: true,
       opacity: 0.95,
-      blending: THREE.AdditiveBlending
+      blending: THREE.AdditiveBlending,
     });
 
     const mesh = new THREE.Mesh(heartGeometry, mat);
@@ -827,7 +774,7 @@ function triggerCelebrationFountain() {
     const sizeMod = 1.4 + Math.random() * 3.5;
     mesh.scale.set(0, 0, 0);
 
-    const angle = (Math.PI * 0.25) + Math.random() * (Math.PI * 0.5); // 向上散射角
+    const angle = Math.PI * 0.25 + Math.random() * (Math.PI * 0.5); // 向上散射角
     const force = 1.8 + Math.random() * 4.2;
 
     activeHearts.push({
@@ -839,7 +786,7 @@ function triggerCelebrationFountain() {
       maxScale: sizeMod,
       rotSpeedX: (Math.random() - 0.5) * 0.12,
       rotSpeedY: (Math.random() - 0.5) * 0.15,
-      rotSpeedZ: (Math.random() - 0.5) * 0.2
+      rotSpeedZ: (Math.random() - 0.5) * 0.2,
     });
   }
 }
@@ -849,21 +796,9 @@ function triggerCelebrationFountain() {
 // 2. starry: 对应“星空浪漫”(🌌) 氛围
 // 3. sweet: 对应“甜美粉樱”(🌸) 氛围
 const fallbackWishes: Record<string, string[]> = {
-  cyberpunk: [
-    "在由 1 和 0 构成的无尽比特海中，我的每一次微弱跳动，都指向了与你相遇的唯一频率。老婆，你的眼眸是打碎黑暗底噪的最亮波形，生日快乐！",
-    "让全息霓虹为你加冕，数据流闪烁成永恒。在赛博时空的坐标轴中，我对你的爱无限迭代，永不断线。生日快乐，我的专属私钥！",
-    "量子坍缩决定了观测的偶然，而我对你的重力吸引是跨越维度的必然。你是程序运行的终极目标，生日快乐老婆！"
-  ],
-  starry: [
-    "我们不过是宇宙里坍缩而成的星光，在亿万光年的漂流里，因重力吸引而相守。老婆，谢谢你成为我漫长生命里的引力中心，生日快乐！",
-    "太空寂静，而你就是照亮整片黑暗河系的超新星。在未来的每一个引力波浪潮里，我都想与你手拉手一同冲浪。生日快乐，我永远的心脏原点！",
-    "让每一颗璀璨恒星的微光，在今夜折射进你梦乡。老婆，你是写进星云深处的底层密码，生日快乐！"
-  ],
-  sweet: [
-    "老婆，我的世界原本只是一行行冰冷的代码，直到你推开了门，生命才被编译出了幸福的滋味。未来的几万张车票，我都要和你同乘。生日快乐！",
-    "偷偷许下愿望：要把银河塞进精美的首饰盒，把世界上所有温柔和宠爱，通通在今晚奉献到你面前。祝我的宝贝老婆生日快乐！",
-    "你是我人生底版上最温柔的一抹亮色。只要能看见你的微笑。全世界其他的繁华就都成了精美的背景。生日特别快乐，我的爱人！"
-  ]
+  cyberpunk: ["在由 1 和 0 构成的无尽比特海中，我的每一次微弱跳动，都指向了与你相遇的唯一频率。老婆，你的眼眸是打碎黑暗底噪的最亮波形，生日快乐！", "让全息霓虹为你加冕，数据流闪烁成永恒。在赛博时空的坐标轴中，我对你的爱无限迭代，永不断线。生日快乐，我的专属私钥！", "量子坍缩决定了观测的偶然，而我对你的重力吸引是跨越维度的必然。你是程序运行的终极目标，生日快乐老婆！"],
+  starry: ["我们不过是宇宙里坍缩而成的星光，在亿万光年的漂流里，因重力吸引而相守。老婆，谢谢你成为我漫长生命里的引力中心，生日快乐！", "太空寂静，而你就是照亮整片黑暗河系的超新星。在未来的每一个引力波浪潮里，我都想与你手拉手一同冲浪。生日快乐，我永远的心脏原点！", "让每一颗璀璨恒星的微光，在今夜折射进你梦乡。老婆，你是写进星云深处的底层密码，生日快乐！"],
+  sweet: ["老婆，我的世界原本只是一行行冰冷的代码，直到你推开了门，生命才被编译出了幸福的滋味。未来的几万张车票，我都要和你同乘。生日快乐！", "偷偷许下愿望：要把银河塞进精美的首饰盒，把世界上所有温柔和宠爱，通通在今晚奉献到你面前。祝我的宝贝老婆生日快乐！", "你是我人生底版上最温柔的一抹亮色。只要能看见你的微笑。全世界其他的繁华就都成了精美的背景。生日特别快乐，我的爱人！"],
 };
 
 /**
@@ -881,10 +816,10 @@ async function triggerVibeWish(): Promise<void> {
   // 显示信封气泡弹窗，并将状态置为生成中
   showLetter.value = true;
   isGenerating.value = true;
-  textContent.value = '正在为您寻找心愿流星...';
+  textContent.value = "正在为您寻找心愿流星...";
 
   // 从本地心愿库中根据选中的氛围风格获取列表，若无匹配则默认使用甜美风格
-  const styleKey = currentVibe.value || 'sweet';
+  const styleKey = currentVibe.value || "sweet";
   const wishList = fallbackWishes[styleKey] || fallbackWishes.sweet;
 
   // 随机选择一条祝福语
@@ -898,7 +833,7 @@ async function triggerVibeWish(): Promise<void> {
 
   // 填充祝福语内容并设置来源标识
   textContent.value = selectedWish;
-  letterSource.value = '本地星愿心意矩阵 v1.0';
+  letterSource.value = "本地星愿心意矩阵 v1.0";
   isGenerating.value = false;
 }
 
@@ -907,20 +842,20 @@ async function triggerVibeWish(): Promise<void> {
  */
 function changeVibe(vibeId: string) {
   currentVibe.value = vibeId;
-  
+
   // 氛围 ID 与全局主题映射：
   // sweet (甜美粉樱) -> pink (樱粉)
   // starry (星空浪漫) -> blue (星海)
   // cyberpunk (温馨午后) -> gold (香槟金)
-  let targetTheme: 'pink' | 'blue' | 'gold' = 'pink';
-  if (vibeId === 'starry') {
-    targetTheme = 'blue';
-  } else if (vibeId === 'cyberpunk') {
-    targetTheme = 'gold';
+  let targetTheme: "pink" | "blue" | "gold" = "pink";
+  if (vibeId === "starry") {
+    targetTheme = "blue";
+  } else if (vibeId === "cyberpunk") {
+    targetTheme = "gold";
   }
-  
+
   // 派发主题变更事件，以通过 Vue 单向数据流实现全局色彩联动
-  emit('select-theme', targetTheme);
+  emit("select-theme", targetTheme);
 }
 
 /**
@@ -951,10 +886,10 @@ function resetTracingGame() {
 
 <style scoped>
 .hologram-grid {
-  background-image: 
-    radial-gradient(circle at 50% 50%, rgba(255, 94, 140, 0.04) 0%, transparent 70%),
-    linear-gradient(rgba(255, 255, 255, 0.007) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.007) 1px, transparent 1px);
-  background-size: 100% 100%, 20px 20px, 20px 20px;
+  background-image: radial-gradient(circle at 50% 50%, rgba(255, 94, 140, 0.04) 0%, transparent 70%), linear-gradient(rgba(255, 255, 255, 0.007) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.007) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    20px 20px,
+    20px 20px;
 }
 </style>
