@@ -17,7 +17,7 @@
 
       <!-- Center Space: Milestone Cards Display (Rotated / Floating based on scroll depth index) -->
       <div class="relative w-full flex-grow flex items-center justify-center my-4 overflow-visible">
-        <div v-for="(card, index) in timelineCards" :key="card.year" class="absolute w-full max-w-[285px] sm:max-w-[310px] p-3 sm:p-4 rounded-2xl bg-[#140411]/95 border border-[#ff5e8c]/30 shadow-[0_0_35px_rgba(255,94,140,0.18)] transition-all duration-700 ease-out flex flex-col items-center pointer-events-auto select-none" :class="[getCardClass(index)]">
+        <div v-for="(card, index) in timelineCards" :key="index" class="absolute w-full max-w-[285px] sm:max-w-[310px] p-3 sm:p-4 rounded-2xl bg-[#140411]/95 border border-[#ff5e8c]/30 shadow-[0_0_35px_rgba(255,94,140,0.18)] transition-all duration-700 ease-out flex flex-col items-center pointer-events-auto select-none" :class="[getCardClass(index)]">
           <!-- Elegant Badge -->
           <span class="px-2.5 py-0.5 rounded-full text-[9px] font-sans font-bold tracking-widest bg-[#ff5e8c]/15 text-[#ff5e8c] border border-[#ff5e8c]/30 mb-2 sm:mb-3">💌 {{ card.year }} // {{ card.phase }}</span>
 
@@ -527,10 +527,15 @@ const lightboxPhoto = ref("");
 /**
  * 开启全屏大图预览模态框。
  * 符合 Google 编码规范，利用中文进行详尽功能性注释。
+ * 如果发生了滑动拖曳手势，则进行拦截以防止误触。
  *
  * @param {string} photoName 待放大的图片文件名。
  */
 function openLightbox(photoName: string): void {
+  // 如果当前发生了明显的滑动或拖拽手势，直接拦截，不开启全屏大图弹窗，确保正常滑动长图的流畅度
+  if (dragThresholdActive) {
+    return;
+  }
   lightboxPhoto.value = photoName;
   isLightboxOpen.value = true;
 }
@@ -560,6 +565,11 @@ let startY = 0;
 let currentY = 0;
 let baseZ = 400;
 let hasSwiped = false; // 标记当前滑动手势内是否已完成切换卡片，防止单次长滑连续触发多张卡片
+
+// 用于防止移动端/PC端滑动或拖动时误触发点击事件开启大图预览
+let dragThresholdActive = false;
+let touchStartX = 0;
+let touchStartY = 0;
 
 // Three.js items (not in ref to avoid runtime lags)
 let scene: THREE.Scene;
@@ -950,22 +960,34 @@ function getCardClass(index: number) {
 function onTouchStart(e: TouchEvent) {
   isDragging = true;
   startY = e.touches[0].clientY;
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
   hasSwiped = false;
+  dragThresholdActive = false; // 触控开始时，初始化重置滑动判定拦截状态
 }
 
 function onTouchMove(e: TouchEvent) {
+  if (!isDragging) return;
+
+  const currentX = e.touches[0].clientX;
+  const curY = e.touches[0].clientY;
+  currentY = curY; // 更新外层交互变量
+
+  // 计算滑动手势移动距离，若超过 10 像素阈值，标记为滑动事件，用以拦截随后的误触点击
+  const dist = Math.hypot(currentX - touchStartX, curY - touchStartY);
+  if (dist > 10) {
+    dragThresholdActive = true;
+  }
+
   // 核心优化：为了确保手机端滑动的流畅度，去除了 isAnimating.value 限制。
   // 这允许用户在上一张卡片过渡动画未结束时，立即通过下手势继续无缝翻页。
   // 同时，继续保持 hasSwiped 限制，确保单次滑动手势（从 TouchStart 到 TouchEnd 之间）只允许翻过 1 张图片，
   // 避免长距离滑动导致一次性滚过多张卡片。
-  if (!isDragging || hasSwiped) {
-    if (isDragging) {
-      spawnTrailAt(e.touches[0].clientX, e.touches[0].clientY);
-    }
+  if (hasSwiped) {
+    spawnTrailAt(currentX, curY);
     return;
   }
-  currentY = e.touches[0].clientY;
-  const deltaY = currentY - startY;
+  const deltaY = curY - startY;
 
   // 设定触发翻页的阈值（50像素）
   if (deltaY < -50) {
@@ -986,32 +1008,45 @@ function onTouchMove(e: TouchEvent) {
     hasSwiped = true;
   }
 
-  spawnTrailAt(e.touches[0].clientX, e.touches[0].clientY);
+  spawnTrailAt(currentX, curY);
 }
 
 function onTouchEnd() {
   isDragging = false;
   hasSwiped = false;
+  // 注意：此处不立即重置 dragThresholdActive，让随后瞬时触发的 click 事件能正常拦截读取
 }
 
 // Mouse event support for desktop preview users
 function onMouseDown(e: MouseEvent) {
   isDragging = true;
   startY = e.clientY;
+  touchStartX = e.clientX;
+  touchStartY = e.clientY;
   hasSwiped = false;
+  dragThresholdActive = false; // 鼠标按下时，重置滑动判定拦截状态
 }
 
 function onMouseMove(e: MouseEvent) {
+  if (!isDragging) return;
+
+  const currentX = e.clientX;
+  const curY = e.clientY;
+  currentY = curY; // 更新外层交互变量
+
+  // 计算鼠标拖曳距离，若超过 10 像素阈值，标记为拖拽事件，用以拦截随后的误触点击
+  const dist = Math.hypot(currentX - touchStartX, curY - touchStartY);
+  if (dist > 10) {
+    dragThresholdActive = true;
+  }
+
   // 核心优化：同样对 PC 端拖曳手势去除 isAnimating.value 限制，以提升交互的连贯性和响应度。
   // 并依赖 hasSwiped 机制保障单次拖动（从MouseDown到MouseUp）只切换 1 张卡片。
-  if (!isDragging || hasSwiped) {
-    if (isDragging) {
-      spawnTrailAt(e.clientX, e.clientY);
-    }
+  if (hasSwiped) {
+    spawnTrailAt(currentX, curY);
     return;
   }
-  currentY = e.clientY;
-  const deltaY = currentY - startY;
+  const deltaY = curY - startY;
 
   // 设定触发翻页的阈值（50像素）
   if (deltaY < -50) {
@@ -1032,12 +1067,13 @@ function onMouseMove(e: MouseEvent) {
     hasSwiped = true;
   }
 
-  spawnTrailAt(e.clientX, e.clientY);
+  spawnTrailAt(currentX, curY);
 }
 
 function onMouseUp() {
   isDragging = false;
   hasSwiped = false;
+  // 同理，不在此处重置 dragThresholdActive，让 click 事件先完成拦截判定
 }
 
 /**

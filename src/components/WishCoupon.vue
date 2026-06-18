@@ -103,7 +103,7 @@
         <!-- Procedural barcode representation -->
         <div class="flex flex-col items-center mt-5 gap-1.5">
           <div class="flex items-center gap-0.5 justify-center opacity-70 h-8">
-            <div v-for="w in [2, 1, 4, 2, 1, 3, 1, 2, 5, 1, 2, 3, 1, 4, 1, 2]" :key="w" class="h-full" :class="[themeClasses.barcode]" :style="{ width: `${w}px` }"></div>
+            <div v-for="(w, idx) in [2, 1, 4, 2, 1, 3, 1, 2, 5, 1, 2, 3, 1, 4, 1, 2]" :key="idx" class="h-full" :class="[themeClasses.barcode]" :style="{ width: `${w}px` }"></div>
           </div>
           <span class="font-mono text-[8px] text-gray-500 tracking-[0.25em]">* HASH: {{ redeemedReceipt.signature }} *</span>
         </div>
