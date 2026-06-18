@@ -1030,8 +1030,11 @@ function onTouchStart(e: TouchEvent) {
 }
 
 function onTouchMove(e: TouchEvent) {
-  // 如果当前正在播放动画，则只生成粒子轨迹，不再触发卡片切换
-  if (!isDragging || hasSwiped || isAnimating.value) {
+  // 核心优化：为了确保手机端滑动的流畅度，去除了 isAnimating.value 限制。
+  // 这允许用户在上一张卡片过渡动画未结束时，立即通过下手势继续无缝翻页。
+  // 同时，继续保持 hasSwiped 限制，确保单次滑动手势（从 TouchStart 到 TouchEnd 之间）只允许翻过 1 张图片，
+  // 避免长距离滑动导致一次性滚过多张卡片。
+  if (!isDragging || hasSwiped) {
     if (isDragging) {
       spawnTrailAt(e.touches[0].clientX, e.touches[0].clientY);
     }
@@ -1075,8 +1078,9 @@ function onMouseDown(e: MouseEvent) {
 }
 
 function onMouseMove(e: MouseEvent) {
-  // 如果当前正在播放动画，则只生成粒子轨迹，不再触发卡片切换
-  if (!isDragging || hasSwiped || isAnimating.value) {
+  // 核心优化：同样对 PC 端拖曳手势去除 isAnimating.value 限制，以提升交互的连贯性和响应度。
+  // 并依赖 hasSwiped 机制保障单次拖动（从MouseDown到MouseUp）只切换 1 张卡片。
+  if (!isDragging || hasSwiped) {
     if (isDragging) {
       spawnTrailAt(e.clientX, e.clientY);
     }
