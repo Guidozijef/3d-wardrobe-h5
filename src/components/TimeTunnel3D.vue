@@ -22,10 +22,14 @@
           <span class="px-2.5 py-0.5 rounded-full text-[9px] font-sans font-bold tracking-widest bg-[#ff5e8c]/15 text-[#ff5e8c] border border-[#ff5e8c]/30 mb-2 sm:mb-3">💌 {{ card.year }} // {{ card.phase }}</span>
 
           <!-- Photo Window -->
-          <div @click="openLightbox(card.photo)" class="relative w-full rounded-lg overflow-hidden border border-white/10 mb-2 sm:mb-3 bg-neutral-950 group cursor-pointer flex items-center justify-center min-h-[150px] max-h-[280px] sm:max-h-[340px]">
-            <!-- 悬浮态磨砂提示框，引导用户点击查看长图/大图，增强交互体验 -->
-            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-20 backdrop-blur-[2px]">
-              <div class="px-3 py-1.5 rounded-lg bg-black/60 border border-white/20 flex items-center gap-1.5 shadow-lg scale-90 group-hover:scale-100 transition-transform duration-300">
+          <!-- 关键修复：移除 bg-neutral-950 以防止图片未加载时显示为纯黑框 -->
+          <!-- 关键修复：移除 group 类以防止移动端 :hover 伪类粘滞导致黑色遮罩层无法消失 -->
+          <div @click="openLightbox(card.photo)" class="photo-window relative w-full rounded-lg overflow-hidden border border-white/10 mb-2 sm:mb-3 cursor-pointer flex items-center justify-center min-h-[150px] max-h-[280px] sm:max-h-[340px]">
+            <!-- 悬浮态磨砂提示框：仅在支持真实 hover 的设备（PC端）上显示 -->
+            <!-- 关键修复：移除 group-hover 和 backdrop-blur，改用 CSS @media (hover: hover) 控制 -->
+            <!-- 避免移动端 :hover 粘滞 + backdrop-blur 被 GPU 渲染为不透明黑块的致命缺陷 -->
+            <div class="photo-hover-overlay absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300 flex items-center justify-center z-20">
+              <div class="photo-hover-hint px-3 py-1.5 rounded-lg bg-black/60 border border-white/20 flex items-center gap-1.5 shadow-lg scale-90 transition-transform duration-300">
                 <svg class="w-3.5 h-3.5 text-[#ff5e8c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m4-3H6" />
                 </svg>
@@ -33,9 +37,10 @@
               </div>
             </div>
 
-            <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none z-10"></div>
+            <!-- 关键修复：将渐变暗角从 from-black/50 大幅降低至 from-black/15，避免在移动端形成明显黑色遮挡 -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent pointer-events-none z-10"></div>
 
-            <img :src="getLocalImage(card.photo)" alt="Memory Node Visual" class="max-w-full max-h-[280px] sm:max-h-[340px] object-contain transition-transform duration-1000 group-hover:scale-103 filter saturate-[1.1] block" />
+            <img :src="getLocalImage(card.photo)" alt="Memory Node Visual" class="max-w-full max-h-[280px] sm:max-h-[340px] object-contain transition-transform duration-1000 filter saturate-[1.1] block" />
 
             <!-- Corner decorations -->
             <div class="absolute top-2.5 left-2.5 w-2 h-2 border-t border-l border-[#ff5e8c]"></div>
@@ -1190,6 +1195,23 @@ function playPageTurnSound(): void {
 /* Floating/Perspective transformations styling */
 .translate-y-0 {
   transform: translateY(0);
+}
+
+/*
+ * 关键修复：使用 @media (hover: hover) 媒体查询，仅在支持真实悬浮交互的设备（PC/笔记本）上
+ * 激活图片上方的黑色蒙层提示框。
+ * 在移动端触摸屏设备上，:hover 伪类会在触摸后「粘滞」不释放，导致 bg-black/40 遮罩层
+ * 永久覆盖在照片上，形成用户反馈中所见的「黑影/黑框遮挡图片」问题。
+ * 同时彻底移除了 backdrop-blur，因为许多移动端 GPU 会将 backdrop-filter: blur()
+ * 错误渲染为完全不透明的黑色矩形。
+ */
+@media (hover: hover) {
+  .photo-window:hover .photo-hover-overlay {
+    opacity: 1;
+  }
+  .photo-window:hover .photo-hover-hint {
+    transform: scale(1);
+  }
 }
 
 /* 自定义大图预览滚动条样式，深度契合黑金及霓虹粉整体视觉系统 */
